@@ -119,8 +119,9 @@ def table_results(summary):
         if bold:
             cell = r'\textbf{' + cell + '}'
         if imp is not None and name != 'C1 Baseline':
+            arrow = r'\uparrow' if imp >= 0 else r'\downarrow'
             sign = '+' if imp >= 0 else ''
-            cell += f' ($\\uparrow${sign}{imp:.1f}\\%)'
+            cell += f' (${arrow}${sign}{imp:.1f}\\%)'
         return cell
 
     header_cols = ' & '.join([r'\textbf{' + m + '}' for m in METRICS])

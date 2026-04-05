@@ -16,12 +16,18 @@ def build_sparse_adj(rows, cols, vals, shape):
 
 
 def build_binary_adj(mat, shape):
-    """Convert scipy sparse matrix to binary PyTorch sparse tensor."""
+    """Convert scipy sparse matrix to symmetrically-normalised PyTorch sparse tensor.
+
+    A_norm[r,c] = 1 / (sqrt(row_deg[r]) * sqrt(col_deg[c]))
+    Passing mat.T gives the transpose with degrees swapped automatically.
+    """
     coo = sp.coo_matrix(mat)
     rows = coo.row.astype(np.int64)
     cols = coo.col.astype(np.int64)
-    vals = np.ones(len(coo.data), dtype=np.float32)
-    return build_sparse_adj(rows, cols, vals, shape)
+    row_deg = np.array(mat.sum(axis=1)).flatten() + 1e-8
+    col_deg = np.array(mat.sum(axis=0)).flatten() + 1e-8
+    vals = (1.0 / np.sqrt(row_deg[rows])) * (1.0 / np.sqrt(col_deg[cols]))
+    return build_sparse_adj(rows, cols, vals.astype(np.float32), shape)
 
 
 def build_weighted_adj(mat, edge_weights_arr, shape):
@@ -50,11 +56,19 @@ def build_weighted_adj(mat, edge_weights_arr, shape):
             if key in edge_weights:
                 raw[idx] = edge_weights[key]
 
-    # log-sigmoid: w_hat = sigmoid(log(1 + w)), maps ratings 1-5 to ~[0.67, 0.86]
-    w_hat = 1.0 / (1.0 + np.exp(-np.log1p(raw)))
+    # Linear scale: maps ratings 1-5 to [0.2, 1.0] for full discriminative range.
+    # Then apply symmetric normalization using weighted degrees so aggregation
+    # stays consistent with the binary adjacency baseline.
+    w_hat = (raw - 1.0) / 4.0 * 0.8 + 0.2   # 1→0.2, 5→1.0
 
-    adj = build_sparse_adj(rows, cols, w_hat.astype(np.float32), shape)
-    adj_t = build_sparse_adj(cols, rows, w_hat.astype(np.float32), (shape[1], shape[0]))
+    row_deg = np.bincount(rows, weights=w_hat,
+                          minlength=shape[0]).astype(np.float64) + 1e-8
+    col_deg = np.bincount(cols, weights=w_hat,
+                          minlength=shape[1]).astype(np.float64) + 1e-8
+    w_norm = w_hat / np.sqrt(row_deg[rows]) / np.sqrt(col_deg[cols])
+
+    adj = build_sparse_adj(rows, cols, w_norm.astype(np.float32), shape)
+    adj_t = build_sparse_adj(cols, rows, w_norm.astype(np.float32), (shape[1], shape[0]))
     return adj, adj_t
 
 

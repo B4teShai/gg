@@ -23,8 +23,8 @@ os.makedirs(FIGURES_DIR, exist_ok=True)
 CONFIG_FILES = {
     'C1 Baseline': 'yelp_merchant_baseline.json',
     'C2 Edge':     'yelp_merchant_edge_feature.json',
-    'C3 Node':     ' yelp_merchant_node_feature.json',
-    'C4 Both':     ' yelp_merchant_edge_node_feature.json',
+    'C3 Node':     'yelp_merchant_node_feature.json',
+    'C4 Both':     'yelp_merchant_edge_node_feature.json',
 }
 METRICS = ['HR@10', 'NDCG@10', 'HR@20', 'NDCG@20']
 

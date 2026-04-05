@@ -1,0 +1,395 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\newfontfamily\cyrillicfont{Times New Roman}
+\newfontfamily\mongolianfont{Times New Roman}
+\usepackage{polyglossia}
+
+\setmainlanguage{mongolian}
+\setotherlanguage{english}
+
+% we propose a novel framework called Self-Supervised Graph Neural Network (SelfGNN) - гэхээр загвар болж байна.
+
+\begin{document}
+
+% \title{Граф нейрон сүлжээний SelfGNN загварт суурилсан харилцагч–борлуулагчийн санал болгох систем дэх графын нэмэлт шинжүүдийн нөлөөллийн судалгаа\\}
+
+\title{Харилцагч–борлуулагчийг санал болгох SelfGNN загварын граф шинжийн нөлөөлөл\\}
+
+\author{\IEEEauthorblockN{Эрдэнэчимэгийн Алтаншагай}
+\IEEEauthorblockA{\textit{Машин оюуны лаборатори, МКУТ, МТЭС} \\
+\textit{Монгол Улсын Их Сургууль}\\
+Монгол Улс, Улаанбаатар хот \\
+22b1num0331@stud.num.edu.mn}
+\and
+\IEEEauthorblockN{Ганболдын Амарсанаа}
+\IEEEauthorblockA{\textit{Машин оюуны лаборатори, МКУТ, МТЭС} \\
+\textit{Монгол Улсын Их Сургууль}\\
+Монгол Улс, Улаанбаатар хот \\
+amarsanaag@num.edu.mn}
+}
+
+\maketitle
+\renewcommand{\abstractname}{Хураангуй}
+\begin{abstract}
+\end{abstract}
+
+\begin{IEEEkeywords}
+\end{IEEEkeywords}
+
+\section{Танилцуулга}
+
+% Санал болгох системүүд нь хэрэглэгчийн зан төлөвт суурилан дараагийн боломжит объектыг таамаглахад чиглэдэг бөгөөд санхүүгийн гүйлгээний өгөгдөлд суурилсан борлуулагч санал болгох нь онцгой сорилттой асуудал юм. Ийм өгөгдөл нь сийрэг, чимээ шуугиантай бөгөөд хэрэглэгчийн сонирхол цаг хугацааны явцад хурдан өөрчлөгддөг.
+
+% Одоогийн аргууд нь хэрэглэгчийн дарааллын мэдээлэл болон хамтын харилцааг тус тусад нь загварчлах хандлагатай бөгөөд эдгээрийг нэгдмэл байдлаар илэрхийлэх нь хязгаарлагдмал хэвээр байна. Түүнчлэн, графын орой болон ирмэгийн нэмэлт шинжүүдийг санал болгох загварт системтэйгээр ашиглах асуудал хангалттай судлагдаагүй байна.
+
+% Иймээс энэхүү судалгаа нь SelfGNN загварт орой болон ирмэгийн нэмэлт шинжүүдийг нэгтгэж, тэдгээрийн борлуулагч санал болгох гүйцэтгэлд үзүүлэх нөлөөг үнэлэхэд чиглэнэ.
+
+\section{Холбоотой ажил}
+
+\subsection{Граф нейрон сүлжээнд суурилсан санал болгох систем}
+
+Санал болгох системүүд уламжлалт матриц задлалын аргаас гүн нейрон сүлжээнд суурилсан загвар руу эрчимтэй шилжиж байна. Ялангуяа граф нейрон сүлжээнд (GNN) суурилсан аргууд нь хэрэглэгч–объектын харилцан үйлдлийг граф бүтэц болгон илэрхийлж, олон шатлалт хөрш мэдээллийг нэгтгэх замаар хамтын шүүлтийн өндөр эрэмбийн хамаарлыг илүү үр дүнтэй загварчлах боломжийг олгож байна \cite{gao2023survey}. Ингэснээр хэрэглэгчийн сонирхлыг илүү нарийвчлалтай ойлгож, илүү чанартай санал гаргах боломжийг бүрдүүлдэг. 
+
+\subsection{Дараалалд суурилсан санал болгох систем}
+
+Дараалалд суурилсан санал болгох (sequential recommendation) систем нь хэрэглэгчийн үйлдлийн цаг хугацааны дарааллыг буюу хэрэглэгчийн сонирхлын цаг хугацааны өөрчлөлтийг ашиглан дараагийн хамгийн боломжит объектыг таамаглахад чиглэдэг. Орчин үеийн SASRec болон Bert4Rec зэрэг аргууд өөрийн-анхааралт (self-attention) механизмыг ашиглан урт хугацааны хамаарлыг илүү оновчтой загварчилж байна~\cite{kang2018sasrec, sun2019bert4rec}. Гэсэн хэдий ч эдгээр аргууд нь зөвхөн хэрэглэгч бүрийн дотоод дарааллыг загварчилдаг бөгөөд богино хугацааны интервалд хэрэглэгч хоорондын хамтын харилцааг тусгадаггүй. Үүнээс гадна, хэрэглэгчийн богино хугацааны үйлдэл дэх чимээ шуугиан, тухайлбал, түр зуурын сонирхол, санамсаргүй харилцан үйлдлийг шүүх механизм дутмаг~\cite{selfgnn2024} байна.
+
+\subsection{Борлуулагч санал болгох}
+
+Борлуулагч санал болгох судалгаа харьцангуй хязгаарлагдмал бөгөөд одоогийн ажлуудыг ерөнхийд нь хоёр чиглэлд ангилж болно. Нэг чиглэл нь харилцагч–борлуулагчийн хоёр төрөлт орой бүхий графыг байгуулж, графын дүрслэлд тулгуурлан холбоос таамаглал хийх арга юм \cite{yilmaz2023link}. Нөгөө нь домэйн шинжүүдийг нэгтгэх бөгөөд NMF\_CSI~\cite{yoo2023merchant} нь NeuMF бүтцэд хэрэглэгчийн хүйс, нас болон борлуулагчийн салбар, бүс нутгийн мэдээллийг далд векторт нэгтгэн сургаснаар суурь загвараас HR@10 болон NDCG@10 үзүүлэлтүүдийг тус тус ойролцоогоор 3\% болон 5\%-иар сайжруулсан. Гэсэн хэдий ч эдгээр аргууд нь графын өндөр эрэмбийн хамаарлыг бүрэн тусгахгүй бөгөөд өгөгдлийн сийрэг байдал болон шинэ борлуулагчийн нөхцөлд гүйцэтгэл хязгаарлагдмал хэвээр байна.
+
+\subsection{Графын орой ба ирмэгийн нэмэлт шинжүүдийн нөлөө}
+
+Графт оройн болон ирмэгийн нэмэлт шинжүүдийг нэгтгэх нь загварын гүйцэтгэлийг сайжруулдгийг олон судалгаа харуулсан. GC-MC \cite{vandenberg2018gcmc} нь хоёр хэсгийн графт ирмэгийн дохиог ашиглан MovieLens-100K дээр RMSE алдааг бууруулсан. EWS-GCN \cite{sukharev2020ewsgcn} нь банкны гүйлгээний өгөгдөл дээр ирмэгийн жинг анхаарлын механизмтай нэгтгэж GAT-ийг \cite{velickovic2018gat} давсан гүйцэтгэл үзүүлсэн. Мөн 2-SEAL-RNN \cite{shumovskaia2021bank} нь цаг хугацаанд мэдрэмтгий ирмэгийн шинжийг ашиглан гүйцэтгэлийг сайжруулсан (Хүснэгт~\ref{tab:feature_comparison}). Гэвч эдгээр нэмэлт шинжүүдийн нөлөө нь өгөгдлийн онцлог болон загварын архитектураас хамааран харилцан адилгүй байна.
+
+\begin{table}[h]
+\caption{Графын нэмэлт шинжүүдийн гүйцэтгэлд үзүүлэх нөлөөллийн харьцуулалт}
+\label{tab:feature_comparison}
+\centering
+
+\renewcommand{\arraystretch}{1.3}
+\setlength{\tabcolsep}{6pt}
+
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{Загвар} & \textbf{Нэмэлт шинж} & \textbf{Өгөгдөл} & \textbf{Хэмжүүр} & \textbf{Үр дүн} \\
+\hline
+GC-MC \cite{vandenberg2018gcmc}
+  & Ирмэгийн жин (үнэлгээ) & MovieLens-100K & RMSE & 0.905 \;(\downarrow \mathbf{0.024}) \\
+\hline
+GAT \cite{sukharev2020ewsgcn}
+  & Оройн шинж & Банкны гүйлгээ & ROC-AUC & 0.8875 \\
+\hline
+2-SEAL-RNN \cite{shumovskaia2021bank}
+  & Ирмэгийн шинж + анхаарал &  Банкны гүйлгээ & ROC-AUC & 0.858 \;(\uparrow \mathbf{0.212}) \\
+\hline
+EWS-GCN \cite{sukharev2020ewsgcn}
+  & Ирмэг + орой & Банкны гүйлгээ & ROC-AUC & \textbf{0.8926} \;(\uparrow 0.004) \\
+\hline
+\end{tabular}
+}
+\end{table}
+ 
+\subsection{SelfGNN: Өөрийгөө хянасан граф нейрон сүлжээний загвар}
+
+Дээрх судалгаануудыг нэгтгэн үзвэл одоогийн аргууд нь цаг хугацааны динамик, хэрэглэгч болон санал болгох обьект хоорондын хамтын харилцаа болон графын бүтцэд суурилсан өөрийгөө хянасан сургалтыг нэгдмэл байдлаар загварчлахад хязгаарлагдмал хэвээр байна. 
+
+SelfGNN (Self-Supervised Graph Neural Networks for Sequential Recommendation) \cite{selfgnn2024} нь энэхүү асуудлыг шийдвэрлэх зорилгоор цаг хугацааны интервалд суурилсан богино хугацааны графыг байгуулж, хэрэглэгч хоорондын хамтын харилцааг тусгадаг. Улмаар интервалын нэгтгэл болон анхаарлын механизмаар урт хугацааны зан төлөвийг олон түвшинд загварчилж, өөрийгөө хянасан сургалтаар богино хугацааны граф дахь чимээ шуугианыг бууруулдаг. Туршилтаар энэхүү загвар нь олон өгөгдлийн олонлог дээр суурь аргуудаас тогтвортой давуу гүйцэтгэл үзүүлсэн (Хүснэгт~\ref{tab:selfgnn_performance}). 
+
+\begin{table}[h]
+\caption{SelfGNN загварын гүйцэтгэлийн харьцуулалт (HR@10, NDCG@10)~\cite{selfgnn2024}}
+\label{tab:selfgnn_performance}
+\centering
+
+\renewcommand{\arraystretch}{1.3}
+\setlength{\tabcolsep}{6pt}
+
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{|l|cc|cc|cc|cc|}
+\hline
+\textbf{Үзүүлэлт} 
+& \multicolumn{2}{c|}{\textbf{Amazon}} 
+& \multicolumn{2}{c|}{\textbf{Gowalla}} 
+& \multicolumn{2}{c|}{\textbf{MovieLens}} 
+& \multicolumn{2}{c|}{\textbf{Yelp}} \\
+\cline{2-9}
+& HR@10 & NDCG@10 & HR@10 & NDCG@10 & HR@10 & NDCG@10 & HR@10 & NDCG@10 \\
+\hline
+Суурь загвар* 
+& 0.368 & 0.230 
+& 0.606 & 0.418 
+& 0.237 & 0.126 
+& 0.346 & 0.189 \\
+\hline
+SelfGNN 
+& \textbf{0.391} & \textbf{0.240} 
+& \textbf{0.637} & \textbf{0.437} 
+& \textbf{0.239} & \textbf{0.128} 
+& \textbf{0.365} & \textbf{0.201} \\
+\hline
+Ахиц 
+& $\uparrow$ 6.3\% & $\uparrow$ 4.3\% 
+& $\uparrow$ 5.1\% & $\uparrow$ 4.5\% 
+& $\uparrow$ 0.8\% & $\uparrow$ 1.6\% 
+& $\uparrow$ 5.5\% & $\uparrow$ 6.3\% \\
+\hline
+\end{tabular}
+}
+
+\vspace{2pt}
+\begin{flushleft}
+\footnotesize{\textit{* Суурь загвар: тухайн өгөгдөл болон үзүүлэлт бүрт хамгийн сайн гүйцэтгэл үзүүлсэн загвар}}
+\end{flushleft}
+
+\end{table}
+
+Гэвч SelfGNN нь хэрэглэгч ба объектын хоёр төрөлт орой бүхий графыг ашигладаг бөгөөд оройн болон ирмэгийн нэмэлт шинжүүдийг тусгадаггүй. Иймээс энэхүү судалгаа нь нэмэлт шинжүүдийг графт нэгтгэх нь борлуулагч санал болгох системийн гүйцэтгэлд үзүүлэх нөлөөг харьцуулан шинжилнэ.
+
+\section{Судалгааны арга зүй}
+
+Энэ хэсэгт судалгааны суурь загвар болох SelfGNN-ийн арга зүйг товч танилцуулж, графын оройн болон ирмэгийн нэмэлт шинжүүдийг нэгтгэх аргыг тодорхойлно.
+
+\subsection{Тэмдэглэгээ ба бодлогын томьёолол}
+
+Энэхүү судалгаанд харилцагч–борлуулагчийн харилцааг цаг хугацааны динамик граф хэлбэрээр загварчилна. Хэрэглэгчдийн олонлогийг $\mathcal{U} = \{u_1, \ldots, u_I\}$, борлуулагчдын олонлогийг $\mathcal{V} = \{v_1, \ldots, v_J\}$ гэж тэмдэглэнэ.
+
+Хугацааны муж $[t_b, t_e]$-ийг $T$ тэнцүү интервалд хувааж, тухайн $t$-р интервал дахь харилцааг зэргэлдээ матриц $\mathcal{A}_t \in \mathbb{R}^{I \times J}$-аар илэрхийлнэ. Хэрэв хэрэглэгч $u_i$ нь борлуулагч $v_j$-тай харилцсан бол $\mathcal{A}_{t,i,j} = 1$, эсрэг тохиолдолд $0$ байна.
+
+Үүнээс гадна дараах нэмэлт мэдээллийг ашиглана:
+\begin{itemize}
+    \item \textbf{Хэрэглэгчийн шинж}: $\mathbf{x}_i^{(u)} \in \mathbb{R}^{d_u}$ (жишээ нь нас, хүйс, байршил, хэрэглээний давтамж)
+    \item \textbf{Борлуулагчийн шинж}: $\mathbf{x}_j^{(v)} \in \mathbb{R}^{d_v}$ (жишээ нь байршил, борлуулагчийн салбар төрөл, үйлчилгээний ангилал, дундаж үнэлгээ)
+    \item \textbf{Ирмэгийн жин}: $w_{t,i,j}$ (жишээ нь гүйлгээний дүн, үнэлгээ)
+\end{itemize}
+
+Мөн дараах тэмдэглэгээг ашиглана:
+\begin{itemize}
+    \item $\mathbf{e}_{t,i}^{(u)} \in \mathbb{R}^{d}$ — $t$-р интервал дахь  $u_i$ хэрэглэгчийн эмбеддинг (вектор төлөөлөл)
+    \item $\mathbf{e}_{t,j}^{(v)} \in \mathbb{R}^{d}$ — $v_j$ борлуулагчийн эмбеддинг
+    \item $\mathbf{f}_i^{(u)} \in \mathbb{R}^{d}$ — хэрэглэгчийн шинжээс үүсгэсэн эмбеддинг
+    \item $\mathbf{f}_j^{(v)} \in \mathbb{R}^{d}$ — борлуулагчийн шинжийн эмбеддинг
+\end{itemize}
+
+Иймээс зорилго нь дээрх мэдээллүүдийг ашиглан $(T+1)$-р интервал дахь харилцагч–борлуулагчийн харилцааг таамаглах явдал юм.
+
+\subsection{SelfGNN загварын тойм}
+ 
+SelfGNN~\cite{selfgnn2024} нь дараалалд суурилсан санал болгох системд зориулсан өөрийгөө хянасан граф нейрон сүлжээ бөгөөд дараах гурван үндсэн бүрдэлтэй.
+ 
+\textbf{(1) Богино хугацааны граф кодчилол.}  
+Харилцан үйлдлийг цаг хугацааны интервалд хувааж, интервал бүрт LightGCN~\cite{he2020lightgcn} ашиглан хэрэглэгч–борлуулагчийн өндөр эрэмбийн хамтын дохиог сурна. LightGCN нь хоёртын зэргэлдээ матрицыг тэгш хэмт нормчлолоор ($D^{-1/2}AD^{-1/2}$) хувиргаж, шугаман тархалтаар хөрш мэдээллийг нэгтгэдэг.
+ 
+\textbf{(2) Урт хугацааны дараалал загварчлал.}  
+Интервал түвшинд GRU болон self-attention ашиглан хугацааны хамаарлыг сурна. Инстанц түвшинд хэрэглэгчийн үйлдлийн дарааллыг self-attention-аар загварчилна.
+ 
+\textbf{(3) Self-Augmented Learning (SAL).}  
+Хэрэглэгч бүрийн урт хугацааны сонирхолд үндэслэн богино хугацааны граф дахь чимээг бууруулах зорилготой сургалтын механизм. Энэхүү механизм нь хэрэглэгч бүрт тохируулсан жин суралцаж, тогтвортой сонирхолтой хэрэглэгч болон хувьсамтгай хэрэглэгчийн чимээг ялгаатай зохицуулдаг.
+
+\subsection{Графын нэмэлт шинжүүдийг нэгтгэх арга}
+ 
+Анхны SelfGNN загвар нь зөвхөн хоёртын зэргэлдээ матриц ($\mathcal{A}_{t,i,j} \in \{0,1\}$) болон Xavier-аар анхчлагдсан сурагдах embedding ашигладаг тул бодит өгөгдлийн баялаг мэдээллийг бүрэн ашиглаж чаддаггүй.
+ 
+Иймээс энэхүү судалгаанд SelfGNN загварыг сайжруулах зорилгоор дараах хоёр үндсэн өөрчлөлтийг санал болгож байна:
+\begin{itemize}
+    \item Ирмэгийн жинг ашиглан жинт граф байгуулах
+    \item Оройн нэмэлт шинжүүдийг embedding-д нэгтгэх
+\end{itemize}
+ 
+Эдгээр өөрчлөлт нь хэрэглэгч–борлуулагчийн харилцааг илүү бодитой илэрхийлж, загварын илэрхийлэх чадварыг нэмэгдүүлэх зорилготой.
+ 
+\subsubsection{Ирмэгийн жинт зэргэлдээ матриц}
+ 
+Хоёртын зэргэлдээ матрицын оронд харилцааны хүчийг илэрхийлэх жин ашиглана. Жишээлбэл, үнэлгээ эсвэл гүйлгээний дүнг жин болгон авч үзнэ. Эдгээр жинг тогтворжуулахын тулд log-sigmoid хувиргалт хийж $(0,1)$ мужид хувиргана:
+ 
+\[
+\hat{w}_{t,i,j} = \sigma\bigl(\log(1 + w_{t,i,j})\bigr)
+\]
+ 
+\noindent энд $\sigma(\cdot)$ нь sigmoid функц, $w_{t,i,j}$ нь анхны ирмэгийн жин юм. Дараа нь LightGCN-ийн тэгш хэмт нормчлолтой нийцүүлэн жинт зэргэлдээ матрицыг дараах байдлаар нормчилно:
+ 
+\[
+\widetilde{\mathcal{A}}_{t,i,j} = 
+\frac{\hat{w}_{t,i,j}}{\sqrt{\sum_{j'} \hat{w}_{t,i,j'}} \cdot \sqrt{\sum_{i'} \hat{w}_{t,i',j}}}
+\]
+ 
+\noindent Энэ нь $D^{-1/2}\hat{W}D^{-1/2}$ нормчлолтой тэнцүү бөгөөд $\hat{w}_{t,i,j} = 1$ үед анхны LightGCN нормчлолтой давхцана.
+ 
+\subsubsection{Оройн шинжийн нэгтгэл}
+ 
+Хэрэглэгч болон борлуулагчийн мета өгөгдлийг MLP ашиглан $d$ хэмжээст embedding орон зайд проекцолно:
+ 
+\[
+\mathbf{f}_i^{(u)} = \text{MLP}_u(\mathbf{x}_i^{(u)}), \quad
+\mathbf{f}_j^{(v)} = \text{MLP}_v(\mathbf{x}_j^{(v)})
+\]
+ 
+\noindent энд $\text{MLP}_u: \mathbb{R}^{d_u} \to \mathbb{R}^{d}$ болон $\text{MLP}_v: \mathbb{R}^{d_v} \to \mathbb{R}^{d}$ нь тус тусын проекцийн сүлжээ юм. Дараа нь GNN тархалтын өмнөх анхны давхаргын (layer-0) embedding-ийг дараах байдлаар үүсгэнэ:
+ 
+\[
+\mathbf{e}_{t,i,0}^{(u)} = \mathbf{e}_{t,i}^{(u)} + \mathbf{f}_i^{(u)}, \quad
+\mathbf{e}_{t,j,0}^{(v)} = \mathbf{e}_{t,j}^{(v)} + \mathbf{f}_j^{(v)}
+\]
+ 
+\noindent Энд дэд индекс $0$ нь GNN давхаргын тархалт эхлэхээс өмнөх анхны embedding-ийг илэрхийлнэ. Нэмэх үйлдэл (additive fusion) нь графын бүтцээс суралцсан мэдээлэл ($\mathbf{e}$) дээр оройн семантик мэдээллийг ($\mathbf{f}$) давхарлах зорилготой.
+ 
+\subsubsection{Сургалтын алгоритм}
+
+\textbf{Algorithm~\ref{alg:feature_integration}}-д нийт сургалтын үйл явцыг харуулна.
+ 
+\begin{algorithm}[t]
+\caption{SelfGNN загварыг нэмэлт шинжүүдтэй сургах алгоритм}
+\label{alg:feature_integration}
+\begin{algorithmic}[1]
+\REQUIRE 
+Хэрэглэгч–борлуулагчийн харилцааны өгөгдөл,
+ирмэгийн жин, 
+хэрэглэгч ба борлуулагчийн нэмэлт шинжүүд
+\ENSURE 
+Сургагдсан загварын параметрүүд
+\STATE Хэрэглэгч болон борлуулагчийн шинжүүдийг MLP ашиглан embedding болгон хувиргана
+\FOR{epoch бүр}
+    \FOR{цагийн интервал бүр}
+        \STATE Ирмэгийн жинд log-sigmoid хувиргалт хийж тогтворжуулна
+        \STATE Хувиргасан жинг тэгш хэмт нормчлолоор нормчилж жинт граф үүсгэнэ
+        \STATE Оройн шинжийн embedding-ийг үндсэн embedding дээр нэмнэ
+        \FOR{GNN давхарга бүр}
+            \STATE Жинт графыг ашиглан хөрш оройнуудын мэдээллийг нэгтгэнэ
+        \ENDFOR
+    \ENDFOR
+    \STATE Интервалуудын дарааллыг GRU ашиглан урт хугацааны хамаарал суралцана
+    \STATE Хэрэглэгчийн үйлдлийн дарааллыг self-attention-аар загварчилна
+    \STATE SAL механизмаар богино хугацааны чимээг хэрэглэгч бүрт тохируулан бууруулна
+    \STATE Дараагийн боломжит харилцааг таамаглана
+    \STATE Алдагдлыг тооцоолж загварын параметрүүдийг шинэчилнэ
+\ENDFOR
+\RETURN Сургагдсан загвар
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Загварын тооцооллын төвөгшлийн шинжилгээ}  
+ 
+Графын кодчиллын үе шат нь $O(T \cdot L \cdot |\mathcal{E}|)$ хугацааны төвөгшилтэй. Энд $T$ нь цаг хугацааны интервалын тоо, $L$ нь GNN давхаргын тоо, $|\mathcal{E}|$ нь тухайн граф дахь ирмэгийн тоо юм.
+ 
+Нэмэлт шинжүүдийн нэгтгэлийн төвөгшлийг тодруулбал: оройн шинжийн MLP проекц нь $O(|\mathcal{U}| \cdot d_u \cdot d + |\mathcal{V}| \cdot d_v \cdot d)$ хугацааны төвөгшилтэй бөгөөд epoch бүрт нэг удаа тооцоологдоно. Ирмэгийн жингийн log-sigmoid хувиргалт болон нормчлол нь $O(|\mathcal{E}|)$ төвөгшилтэй. Эдгээр нь GNN тархалтын $O(T \cdot L \cdot |\mathcal{E}|)$ төвөгшлөөс давамгайлагддаг тул нийт тооцооллын төвөгшил анхны SelfGNN загвартай ижил хэмжээнд хадгалагдана.
+
+\subsection{Үнэлгээний хэмжүүрүүд}
+
+Санал болгох системийн гүйцэтгэлийг SelfGNN~\cite{selfgnn2024}-ийн үнэлгээний протоколтой нийцүүлэн Hit Rate (HR@$K$) болон Normalized Discounted Cumulative Gain (NDCG@$K$) хэмжүүрүүдээр үнэлнэ. 
+
+HR@$K$ нь хэрэглэгч бүрийн хувьд эрэмбэлэгдсэн эхний $K$ санал дотор зөв борлуулагч орсон эсэхийг хэмжих ба амжилтыг хоёртын (0 эсвэл 1) утгаар илэрхийлнэ. Харин NDCG@$K$ нь зөв борлуулагчийн жагсаалт дахь байрлалыг харгалзан үзэж, илүү дээд байрлалд зөв санал гарсан тохиолдолд өндөр оноо олгодог тул эрэмбийн чанарыг нарийвчлан үнэлдэг.
+
+Эдгээр хэмжүүрүүдийг $K \in \{10, 20\}$ утгуудад тооцоолно.
+
+\section{Туршилт}
+
+\subsection{Туршилтын өгөгдөл / Yelp болон банкны гүйлгээний синтетик өгөгдөл}
+% Синтетик өгөгдөл болон Yelp өгөгдлийн харьцуулалт
+
+\subsection{Туршилтын орчин}
+
+\subsection{Туршилтын хэрэгжүүлэлт}
+% өгөгдлүүдийн ямар шинжийг графт нэгтгэн сургасан ( 2 туршилтын өгөгдөл өөр бүтэцтэй учир хэрхэн тэрхүү хэрэгжүүлэлтийг хийх)
+% 4 өөр туршилтыг хийнэ.
+    % 1. энгийн bipartite graph (Whgat in SelGNN do)
+    % 2. ирмэгийн нэмэлт шинж (edge feature, weigth)
+    % 3. оройн шинж (user, merchant node features)
+    % 4. edge + node features
+    
+\section{Үр дүн}
+
+\subsection{Туршилтын үр дүн}
+% Хийсэн 4 өөр туршилтын үр дүн, харьцуулсан
+
+\subsection{Гол үр дүн ба хэлэлцүүлэг}
+% Ямар хязгаарлалт ажиглагдсан аль нь илүү боломжит байх for merchant recommendation
+
+\section{Дүгнэлт}
+
+\addcontentsline{toc}{part}{Зүүлт}
+\renewcommand\refname{Зүүлт}
+\begin{thebibliography}{99}
+
+\bibitem{gao2023survey}
+C.~Gao et al.,
+``A Survey of Graph Neural Networks for Recommender Systems: Challenges, Methods, and Directions,''
+\textit{ACM Transactions on Recommender Systems}, vol.~1, no.~1, Article~3, 2023.
+DOI: 10.1145/3568022.
+
+\bibitem{wang2019ngcf}
+X.~Wang, X.~He, M.~Wang, F.~Feng, and T.-S.~Chua,
+``Neural Graph Collaborative Filtering,''
+in \textit{Proceedings of SIGIR}, 2019.
+
+\bibitem{he2020lightgcn}
+X.~He, K.~Deng, X.~Wang, Y.~Li, Y.~Zhang, and M.~Wang,
+``LightGCN: Simplifying and Powering Graph Convolution Network for Recommendation,''
+in \textit{Proceedings of SIGIR}, 2020.
+
+\bibitem{kang2018sasrec}
+W.-C.~Kang and J.~McAuley,
+``Self-Attentive Sequential Recommendation,''
+in \textit{Proceedings of IEEE ICDM}, 2018.
+
+\bibitem{sun2019bert4rec}
+F.~Sun, J.~Liu, J.~Wu, C.~Pei, X.~Lin, W.~Ou, and P.~Jiang,
+``BERT4Rec: Sequential Recommendation with Bidirectional Encoder Representations from Transformer,''
+in \textit{Proceedings of ACM CIKM}, 2019.
+
+\bibitem{selfgnn2024}
+Y.~Liu, L.~Xia, and C.~Huang,
+``SelfGNN: Self-Supervised Graph Neural Networks for Sequential Recommendation,''
+in \textit{Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR'24)},
+Washington, DC, USA, July 2024, pp.~1609--1618.
+DOI: 10.1145/3626772.3657716.
+
+\bibitem{yoo2023merchant}
+S.~Yoo and J.~Kim,
+``Merchant Recommender System Using Credit Card Payment Data,''
+\textit{Electronics}, vol.~12, no.~811, 2023, doi: 10.3390/electronics12040811.
+
+\bibitem{vandenberg2018gcmc}
+R.~van den Berg, T.~N.~Kipf, and M.~Welling,
+``Graph Convolutional Matrix Completion,''
+\textit{KDD Workshop on Deep Learning for Recommender Systems}, 2018,
+arXiv:1706.02263.
+
+\bibitem{shumovskaia2021bank}
+V.~Shumovskaia, N.~Fedyanin, I.~Sukharev, D.~Berestnev, and M.~Panov,
+``Linking Bank Clients Using Graph Neural Networks Powered by Rich
+Transactional Data,''
+\textit{International Journal of Data Science and Analytics}, 2021,
+doi: 10.1007/s41060-021-00276-w.
+
+\bibitem{sukharev2020ewsgcn}
+I.~Sukharev, V.~Shumovskaia, K.~Fedyanin, M.~Panov, and D.~Berestnev,
+``EWS-GCN: Edge Weight-Shared Graph Convolutional Network for
+Transactional Banking Data,''
+\textit{IEEE ICDM Workshop}, 2020,
+arXiv:2009.14588.
+
+\bibitem{velickovic2018gat}
+P.~Veli\v{c}kovi\'{c}, G.~Cucurull, A.~Casanova, A.~Romero,
+P.~Li\`{o}, and Y.~Bengio,
+``Graph Attention Networks,''
+in \textit{Proceedings of ICLR}, 2018,
+arXiv:1710.10903.
+
+\end{thebibliography}
+
+\end{document}

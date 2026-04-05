@@ -9,13 +9,19 @@ import torch
 
 
 def build_sparse_adj(mat, shape):
-    """Convert scipy sparse matrix to PyTorch sparse tensor."""
+    """Convert scipy sparse matrix to symmetrically-normalised PyTorch sparse tensor.
+
+    For a bipartite adjacency A (shape: rows × cols):
+        A_norm[r,c] = 1 / (sqrt(row_deg[r]) * sqrt(col_deg[c]))
+    Passing mat.T gives the transpose with degrees swapped automatically.
+    """
     coo = sp.coo_matrix(mat)
-    row = torch.LongTensor(coo.row)
-    col = torch.LongTensor(coo.col)
-    idx = torch.stack([row, col])
-    vals = torch.ones(len(coo.data), dtype=torch.float32)
-    return torch.sparse_coo_tensor(idx, vals, size=shape).coalesce()
+    row_deg = np.array(mat.sum(axis=1)).flatten() + 1e-8
+    col_deg = np.array(mat.sum(axis=0)).flatten() + 1e-8
+    vals = (1.0 / np.sqrt(row_deg[coo.row])) * (1.0 / np.sqrt(col_deg[coo.col]))
+    idx = torch.stack([torch.LongTensor(coo.row), torch.LongTensor(coo.col)])
+    return torch.sparse_coo_tensor(idx, torch.FloatTensor(vals.astype(np.float32)),
+                                   size=shape).coalesce()
 
 
 class DataHandler:

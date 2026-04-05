@@ -21,8 +21,7 @@ class MultiHeadSelfAttention(nn.Module):
         k = self.W_K(x).view(B, S, self.num_heads, self.d_k).transpose(1, 2)
         v = self.W_V(x).view(B, S, self.num_heads, self.d_k).transpose(1, 2)
         scores = torch.matmul(q, k.transpose(-2, -1)) / (self.d_k ** 0.5)
-        scores = torch.exp(scores)
-        attn = scores / (scores.sum(dim=-1, keepdim=True) + 1e-8)
+        attn = F.softmax(scores, dim=-1)
         context = torch.matmul(attn, v)
         context = context.transpose(1, 2).contiguous().view(B, S, D)
         return context

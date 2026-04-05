@@ -26,7 +26,7 @@ from datetime import datetime
 _here = os.path.dirname(os.path.abspath(__file__))
 _root = os.path.join(_here, '..')
 RAW_DIR = os.path.join(_root, 'Datasets', 'yelp_dataset')
-OUT_DIR = os.path.join(_root, 'Datasets', 'yelp-merchant-features')
+OUT_DIR = os.path.join(_root, 'Datasets', 'yelp-merchant')
 
 REVIEW_JSON = os.path.join(RAW_DIR, 'yelp_academic_dataset_review.json')
 BUSINESS_JSON = os.path.join(RAW_DIR, 'yelp_academic_dataset_business.json')

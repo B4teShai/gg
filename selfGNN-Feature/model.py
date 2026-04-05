@@ -21,8 +21,7 @@ class MultiHeadSelfAttention(nn.Module):
         k = self.W_K(x).view(B, S, self.num_heads, self.d_k).transpose(1, 2)
         v = self.W_V(x).view(B, S, self.num_heads, self.d_k).transpose(1, 2)
         scores = torch.matmul(q, k.transpose(-2, -1)) / (self.d_k ** 0.5)
-        scores = torch.exp(scores)
-        attn = scores / (scores.sum(dim=-1, keepdim=True) + 1e-8)
+        attn = F.softmax(scores, dim=-1)
         context = torch.matmul(attn, v)
         context = context.transpose(1, 2).contiguous().view(B, S, D)
         return context
@@ -93,24 +92,27 @@ class SelfGNN(nn.Module):
             d_u = user_features.shape[1]
             d_v = merchant_features.shape[1]
             hidden = args.node_mlp_hidden
+            # LayerNorm as final layer keeps projected features at unit scale
+            # before additive fusion with embeddings, preventing magnitude blowup.
             self.user_mlp = nn.Sequential(
                 nn.Linear(d_u, hidden),
                 nn.ReLU(),
-                nn.Linear(hidden, self.latdim)
+                nn.Linear(hidden, self.latdim),
+                nn.LayerNorm(self.latdim),
             )
             self.merchant_mlp = nn.Sequential(
                 nn.Linear(d_v, hidden),
                 nn.ReLU(),
-                nn.Linear(hidden, self.latdim)
+                nn.Linear(hidden, self.latdim),
+                nn.LayerNorm(self.latdim),
             )
-            # Small-gain init on the output layer keeps initial feature contribution
-            # comparable to embedding scale (~0.0006), preventing GNN magnitude blowup.
+            # Use small gain (0.01) for ALL linear layers so the initial
+            # feature contribution is negligible — the model learns to scale up.
             for mlp in [self.user_mlp, self.merchant_mlp]:
-                linears = [l for l in mlp if isinstance(l, nn.Linear)]
-                for i, layer in enumerate(linears):
-                    gain = 0.01 if i == len(linears) - 1 else 1.0
-                    nn.init.xavier_uniform_(layer.weight, gain=gain)
-                    nn.init.zeros_(layer.bias)
+                for layer in mlp:
+                    if isinstance(layer, nn.Linear):
+                        nn.init.xavier_uniform_(layer.weight, gain=0.01)
+                        nn.init.zeros_(layer.bias)
             self.register_buffer('user_feat', user_features)
             self.register_buffer('merchant_feat', merchant_features)
         else:
