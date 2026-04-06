@@ -26,7 +26,7 @@ def parse_args():
     parser.add_argument('--ssl_reg', default=1e-7, type=float, help='SAL loss weight')
     parser.add_argument('--leaky', default=0.5, type=float, help='leaky relu slope')
     parser.add_argument('--tstEpoch', default=3, type=int, help='evaluate every N epochs')
-    parser.add_argument('--seed', default=100, type=int)
+    parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--device', default='cuda', type=str)
     parser.add_argument('--patience', default=20, type=int,
                         help='early stopping patience (counted in evaluation epochs)')
