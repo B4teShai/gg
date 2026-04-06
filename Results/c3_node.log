@@ -1,0 +1,541 @@
+Device: cuda
+Dataset: yelp-merchant
+Edge features: False
+Node features: True
+Users: 268653, Items(Merchants): 109325
+Test users: 10000
+Val users: 10000
+Val dict loaded: 10000 users
+/workspace/gg/selfGNN-Feature/data_handler.py:15: UserWarning: Sparse invariant checks are implicitly disabled. Memory errors (e.g. SEGFAULT) will occur when operating on a sparse tensor which violates the invariants, but checks incur performance overhead. To silence this warning, explicitly opt in or out. See `torch.sparse.check_sparse_tensor_invariants.__doc__` for guidance.  (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:760.)
+  return torch.sparse_coo_tensor(idx, v, size=shape).coalesce()
+Sub-graphs: 5
+User features: torch.Size([268653, 4]), Merchant features: torch.Size([109325, 6])
+Trainable parameters: 121,097,793
+======================================================================
+Training for 150 epochs (eval every 3)
+Early stopping: patience=20 eval epochs on Val NDCG@10
+======================================================================
+  Step 5/20: preLoss=10.8054 reg=2.5243 sal=0.0681  Step 10/20: preLoss=9.5458 reg=2.4456 sal=0.0181  Step 15/20: preLoss=8.3054 reg=2.4613 sal=0.0014  Step 20/20: preLoss=3.9643 reg=2.4151 sal=0.0002
+Epoch 0/150 | Loss=13.8574 preLoss=11.3684 | 12.0s | lr=0.000960
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1567 | HR@20=0.2267 | NDCG@10=0.0893 | NDCG@20=0.1069
+  >>> New best Val NDCG@10=0.0893. Model saved.
+
+  Step 5/20: preLoss=4.6146 reg=2.3581 sal=0.0004  Step 10/20: preLoss=4.5483 reg=2.3589 sal=0.0004  Step 15/20: preLoss=3.8900 reg=2.3651 sal=0.0004  Step 20/20: preLoss=4.0252 reg=2.3233 sal=0.0002
+Epoch 1/150 | Loss=7.6820 preLoss=5.3361 | 12.0s | lr=0.000922
+
+  Step 5/20: preLoss=3.9385 reg=2.2683 sal=0.0004  Step 10/20: preLoss=2.9414 reg=2.2409 sal=0.0004  Step 15/20: preLoss=3.8696 reg=2.2145 sal=0.0004  Step 20/20: preLoss=2.2998 reg=2.2075 sal=0.0002
+Epoch 2/150 | Loss=6.0341 preLoss=3.7829 | 11.9s | lr=0.000885
+
+  Step 5/20: preLoss=3.6296 reg=2.2015 sal=0.0003  Step 10/20: preLoss=3.7569 reg=2.1451 sal=0.0003  Step 15/20: preLoss=3.0917 reg=2.1171 sal=0.0003  Step 20/20: preLoss=2.5211 reg=2.1197 sal=0.0002
+Epoch 3/150 | Loss=5.4700 preLoss=3.3206 | 11.8s | lr=0.000849
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1658 | HR@20=0.2444 | NDCG@10=0.0918 | NDCG@20=0.1116
+  >>> New best Val NDCG@10=0.0918. Model saved.
+
+  Step 5/20: preLoss=3.6260 reg=2.0694 sal=0.0004  Step 10/20: preLoss=2.2964 reg=2.0449 sal=0.0004  Step 15/20: preLoss=2.7995 reg=2.0574 sal=0.0004  Step 20/20: preLoss=3.1576 reg=2.0207 sal=0.0002
+Epoch 4/150 | Loss=5.0331 preLoss=2.9741 | 12.1s | lr=0.000815
+
+  Step 5/20: preLoss=2.2441 reg=1.9815 sal=0.0003  Step 10/20: preLoss=2.0422 reg=1.9685 sal=0.0003  Step 15/20: preLoss=2.2161 reg=1.9457 sal=0.0003  Step 20/20: preLoss=2.8123 reg=1.9185 sal=0.0002
+Epoch 5/150 | Loss=4.1588 preLoss=2.1985 | 11.8s | lr=0.000783
+
+  Step 5/20: preLoss=2.8378 reg=1.8939 sal=0.0003  Step 10/20: preLoss=1.8327 reg=1.8791 sal=0.0004  Step 15/20: preLoss=2.6190 reg=1.8606 sal=0.0004  Step 20/20: preLoss=2.1657 reg=1.8288 sal=0.0002
+Epoch 6/150 | Loss=4.0379 preLoss=2.1615 | 11.9s | lr=0.000751
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1726 | HR@20=0.2551 | NDCG@10=0.0949 | NDCG@20=0.1156
+  >>> New best Val NDCG@10=0.0949. Model saved.
+
+  Step 5/20: preLoss=1.8024 reg=1.8252 sal=0.0003  Step 10/20: preLoss=1.8624 reg=1.8058 sal=0.0003  Step 15/20: preLoss=1.8763 reg=1.7780 sal=0.0004  Step 20/20: preLoss=1.9162 reg=1.7613 sal=0.0002
+Epoch 7/150 | Loss=3.6578 preLoss=1.8580 | 11.8s | lr=0.000721
+
+  Step 5/20: preLoss=1.7814 reg=1.7409 sal=0.0003  Step 10/20: preLoss=1.3048 reg=1.7249 sal=0.0003  Step 15/20: preLoss=1.6011 reg=1.7122 sal=0.0003  Step 20/20: preLoss=2.0709 reg=1.7028 sal=0.0002
+Epoch 8/150 | Loss=3.3883 preLoss=1.6611 | 11.8s | lr=0.000693
+
+  Step 5/20: preLoss=2.6635 reg=1.6774 sal=0.0003  Step 10/20: preLoss=1.2397 reg=1.6564 sal=0.0004  Step 15/20: preLoss=1.1271 reg=1.6552 sal=0.0003  Step 20/20: preLoss=1.4173 reg=1.6373 sal=0.0002
+Epoch 9/150 | Loss=3.1918 preLoss=1.5269 | 12.0s | lr=0.000665
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1833 | HR@20=0.2647 | NDCG@10=0.1040 | NDCG@20=0.1244
+  >>> New best Val NDCG@10=0.1040. Model saved.
+
+  Step 5/20: preLoss=1.1903 reg=1.6184 sal=0.0004  Step 10/20: preLoss=1.0911 reg=1.5993 sal=0.0003  Step 15/20: preLoss=1.1884 reg=1.5823 sal=0.0003  Step 20/20: preLoss=1.8379 reg=1.5735 sal=0.0002
+Epoch 10/150 | Loss=2.9335 preLoss=1.3330 | 11.4s | lr=0.000638
+
+  Step 5/20: preLoss=1.2318 reg=1.5565 sal=0.0003  Step 10/20: preLoss=0.9742 reg=1.5390 sal=0.0003  Step 15/20: preLoss=1.5644 reg=1.5202 sal=0.0003  Step 20/20: preLoss=1.7420 reg=1.5106 sal=0.0002
+Epoch 11/150 | Loss=2.8174 preLoss=1.2794 | 11.3s | lr=0.000613
+
+  Step 5/20: preLoss=1.2183 reg=1.4909 sal=0.0003  Step 10/20: preLoss=1.1768 reg=1.4801 sal=0.0003  Step 15/20: preLoss=1.6285 reg=1.4627 sal=0.0003  Step 20/20: preLoss=1.4718 reg=1.4564 sal=0.0002
+Epoch 12/150 | Loss=2.6633 preLoss=1.1831 | 11.2s | lr=0.000588
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1792 | HR@20=0.2678 | NDCG@10=0.1008 | NDCG@20=0.1231
+  No improvement. Patience: 1/20
+
+  Step 5/20: preLoss=1.2259 reg=1.4362 sal=0.0003  Step 10/20: preLoss=1.0193 reg=1.4292 sal=0.0003  Step 15/20: preLoss=0.9180 reg=1.4199 sal=0.0003  Step 20/20: preLoss=1.0838 reg=1.4038 sal=0.0002
+Epoch 13/150 | Loss=2.5026 preLoss=1.0717 | 11.1s | lr=0.000565
+
+  Step 5/20: preLoss=1.1213 reg=1.3964 sal=0.0003  Step 10/20: preLoss=0.9099 reg=1.3859 sal=0.0003  Step 15/20: preLoss=1.0259 reg=1.3689 sal=0.0003  Step 20/20: preLoss=0.8361 reg=1.3522 sal=0.0002
+Epoch 14/150 | Loss=2.3391 preLoss=0.9566 | 11.4s | lr=0.000542
+
+  Step 5/20: preLoss=0.9520 reg=1.3393 sal=0.0003  Step 10/20: preLoss=0.9674 reg=1.3363 sal=0.0003  Step 15/20: preLoss=0.9268 reg=1.3245 sal=0.0003  Step 20/20: preLoss=0.8348 reg=1.3068 sal=0.0002
+Epoch 15/150 | Loss=2.2765 preLoss=0.9436 | 11.8s | lr=0.000520
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1911 | HR@20=0.2816 | NDCG@10=0.1078 | NDCG@20=0.1306
+  >>> New best Val NDCG@10=0.1078. Model saved.
+
+  Step 5/20: preLoss=1.0783 reg=1.2973 sal=0.0004  Step 10/20: preLoss=1.0704 reg=1.2830 sal=0.0003  Step 15/20: preLoss=0.7968 reg=1.2769 sal=0.0003  Step 20/20: preLoss=0.8396 reg=1.2664 sal=0.0002
+Epoch 16/150 | Loss=2.1778 preLoss=0.8931 | 11.7s | lr=0.000500
+
+  Step 5/20: preLoss=0.9462 reg=1.2508 sal=0.0004  Step 10/20: preLoss=0.8138 reg=1.2434 sal=0.0004  Step 15/20: preLoss=0.7265 reg=1.2324 sal=0.0003  Step 20/20: preLoss=0.9834 reg=1.2206 sal=0.0002
+Epoch 17/150 | Loss=2.0845 preLoss=0.8439 | 12.1s | lr=0.000480
+
+  Step 5/20: preLoss=0.8361 reg=1.2127 sal=0.0004  Step 10/20: preLoss=0.8858 reg=1.2011 sal=0.0004  Step 15/20: preLoss=0.9921 reg=1.1951 sal=0.0003  Step 20/20: preLoss=0.7163 reg=1.1860 sal=0.0002
+Epoch 18/150 | Loss=2.0490 preLoss=0.8459 | 12.0s | lr=0.000460
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1938 | HR@20=0.2846 | NDCG@10=0.1075 | NDCG@20=0.1304
+  No improvement. Patience: 1/20
+
+  Step 5/20: preLoss=0.8460 reg=1.1798 sal=0.0003  Step 10/20: preLoss=0.9443 reg=1.1688 sal=0.0004  Step 15/20: preLoss=0.7443 reg=1.1668 sal=0.0004  Step 20/20: preLoss=0.7036 reg=1.1515 sal=0.0002
+Epoch 19/150 | Loss=2.0296 preLoss=0.8603 | 11.7s | lr=0.000442
+
+  Step 5/20: preLoss=0.6202 reg=1.1440 sal=0.0003  Step 10/20: preLoss=0.6722 reg=1.1365 sal=0.0003  Step 15/20: preLoss=0.7198 reg=1.1326 sal=0.0003  Step 20/20: preLoss=0.6354 reg=1.1212 sal=0.0002
+Epoch 20/150 | Loss=1.8960 preLoss=0.7592 | 11.8s | lr=0.000424
+
+  Step 5/20: preLoss=0.6659 reg=1.1163 sal=0.0003  Step 10/20: preLoss=0.9059 reg=1.1080 sal=0.0004  Step 15/20: preLoss=0.7966 reg=1.0999 sal=0.0003  Step 20/20: preLoss=0.9096 reg=1.0941 sal=0.0002
+Epoch 21/150 | Loss=1.8494 preLoss=0.7424 | 11.6s | lr=0.000407
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1899 | HR@20=0.2809 | NDCG@10=0.1068 | NDCG@20=0.1296
+  No improvement. Patience: 2/20
+
+  Step 5/20: preLoss=0.6672 reg=1.0875 sal=0.0003  Step 10/20: preLoss=0.5318 reg=1.0806 sal=0.0003  Step 15/20: preLoss=0.6176 reg=1.0765 sal=0.0003  Step 20/20: preLoss=0.5461 reg=1.0676 sal=0.0002
+Epoch 22/150 | Loss=1.7740 preLoss=0.6941 | 11.6s | lr=0.000391
+
+  Step 5/20: preLoss=0.7664 reg=1.0604 sal=0.0004  Step 10/20: preLoss=0.7525 reg=1.0508 sal=0.0003  Step 15/20: preLoss=0.5785 reg=1.0425 sal=0.0003  Step 20/20: preLoss=0.7593 reg=1.0385 sal=0.0002
+Epoch 23/150 | Loss=1.7239 preLoss=0.6724 | 11.7s | lr=0.000375
+
+  Step 5/20: preLoss=0.5684 reg=1.0300 sal=0.0003  Step 10/20: preLoss=0.7824 reg=1.0316 sal=0.0004  Step 15/20: preLoss=0.7638 reg=1.0209 sal=0.0004  Step 20/20: preLoss=0.5915 reg=1.0121 sal=0.0002
+Epoch 24/150 | Loss=1.7400 preLoss=0.7129 | 11.8s | lr=0.000360
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1984 | HR@20=0.2934 | NDCG@10=0.1124 | NDCG@20=0.1363
+  >>> New best Val NDCG@10=0.1124. Model saved.
+
+  Step 5/20: preLoss=0.7073 reg=1.0082 sal=0.0003  Step 10/20: preLoss=0.4770 reg=1.0049 sal=0.0003  Step 15/20: preLoss=0.7424 reg=0.9986 sal=0.0003  Step 20/20: preLoss=0.6783 reg=0.9900 sal=0.0002
+Epoch 25/150 | Loss=1.6660 preLoss=0.6627 | 12.1s | lr=0.000346
+
+  Step 5/20: preLoss=0.7232 reg=0.9848 sal=0.0003  Step 10/20: preLoss=0.5926 reg=0.9801 sal=0.0003  Step 15/20: preLoss=0.5606 reg=0.9722 sal=0.0004  Step 20/20: preLoss=0.8045 reg=0.9682 sal=0.0002
+Epoch 26/150 | Loss=1.6142 preLoss=0.6347 | 11.8s | lr=0.000332
+
+  Step 5/20: preLoss=0.5866 reg=0.9636 sal=0.0004  Step 10/20: preLoss=0.5669 reg=0.9571 sal=0.0004  Step 15/20: preLoss=0.5736 reg=0.9534 sal=0.0003  Step 20/20: preLoss=0.4976 reg=0.9479 sal=0.0002
+Epoch 27/150 | Loss=1.5608 preLoss=0.6031 | 11.8s | lr=0.000319
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2012 | HR@20=0.2939 | NDCG@10=0.1116 | NDCG@20=0.1348
+  No improvement. Patience: 1/20
+
+  Step 5/20: preLoss=0.5288 reg=0.9412 sal=0.0003  Step 10/20: preLoss=0.6324 reg=0.9353 sal=0.0003  Step 15/20: preLoss=0.5141 reg=0.9317 sal=0.0003  Step 20/20: preLoss=0.5167 reg=0.9256 sal=0.0001
+Epoch 28/150 | Loss=1.5133 preLoss=0.5770 | 11.9s | lr=0.000306
+
+  Step 5/20: preLoss=0.6050 reg=0.9294 sal=0.0003  Step 10/20: preLoss=0.6725 reg=0.9192 sal=0.0003  Step 15/20: preLoss=0.5685 reg=0.9152 sal=0.0003  Step 20/20: preLoss=0.4423 reg=0.9102 sal=0.0002
+Epoch 29/150 | Loss=1.5536 preLoss=0.6338 | 11.8s | lr=0.000294
+
+  Step 5/20: preLoss=0.5436 reg=0.9046 sal=0.0003  Step 10/20: preLoss=0.5978 reg=0.9009 sal=0.0003  Step 15/20: preLoss=0.6750 reg=0.8953 sal=0.0003  Step 20/20: preLoss=0.6913 reg=0.8932 sal=0.0002
+Epoch 30/150 | Loss=1.4862 preLoss=0.5854 | 12.0s | lr=0.000282
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1985 | HR@20=0.2864 | NDCG@10=0.1121 | NDCG@20=0.1342
+  No improvement. Patience: 2/20
+
+  Step 5/20: preLoss=0.5734 reg=0.8871 sal=0.0003  Step 10/20: preLoss=0.5449 reg=0.8836 sal=0.0003  Step 15/20: preLoss=0.4734 reg=0.8807 sal=0.0003  Step 20/20: preLoss=0.6601 reg=0.8762 sal=0.0001
+Epoch 31/150 | Loss=1.4606 preLoss=0.5766 | 11.9s | lr=0.000271
+
+  Step 5/20: preLoss=0.5829 reg=0.8739 sal=0.0003  Step 10/20: preLoss=0.5645 reg=0.8701 sal=0.0003  Step 15/20: preLoss=0.5076 reg=0.8655 sal=0.0003  Step 20/20: preLoss=0.4765 reg=0.8620 sal=0.0001
+Epoch 32/150 | Loss=1.4570 preLoss=0.5877 | 11.6s | lr=0.000260
+
+  Step 5/20: preLoss=0.5177 reg=0.8605 sal=0.0003  Step 10/20: preLoss=0.7383 reg=0.8559 sal=0.0003  Step 15/20: preLoss=0.5531 reg=0.8531 sal=0.0003  Step 20/20: preLoss=0.8772 reg=0.8475 sal=0.0002
+Epoch 33/150 | Loss=1.4515 preLoss=0.5958 | 11.7s | lr=0.000250
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2077 | HR@20=0.2986 | NDCG@10=0.1180 | NDCG@20=0.1409
+  >>> New best Val NDCG@10=0.1180. Model saved.
+
+  Step 5/20: preLoss=0.6185 reg=0.8450 sal=0.0003  Step 10/20: preLoss=0.6567 reg=0.8416 sal=0.0003  Step 15/20: preLoss=0.5699 reg=0.8387 sal=0.0003  Step 20/20: preLoss=0.5334 reg=0.8373 sal=0.0002
+Epoch 34/150 | Loss=1.4063 preLoss=0.5638 | 11.4s | lr=0.000240
+
+  Step 5/20: preLoss=0.5211 reg=0.8332 sal=0.0003  Step 10/20: preLoss=0.5098 reg=0.8306 sal=0.0003  Step 15/20: preLoss=0.6017 reg=0.8265 sal=0.0003  Step 20/20: preLoss=0.4745 reg=0.8254 sal=0.0002
+Epoch 35/150 | Loss=1.3896 preLoss=0.5593 | 11.4s | lr=0.000230
+
+  Step 5/20: preLoss=0.6162 reg=0.8209 sal=0.0003  Step 10/20: preLoss=0.4912 reg=0.8198 sal=0.0003  Step 15/20: preLoss=0.5842 reg=0.8152 sal=0.0003  Step 20/20: preLoss=0.4498 reg=0.8142 sal=0.0002
+Epoch 36/150 | Loss=1.3573 preLoss=0.5385 | 11.8s | lr=0.000221
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1924 | HR@20=0.2798 | NDCG@10=0.1091 | NDCG@20=0.1312
+  No improvement. Patience: 1/20
+
+  Step 5/20: preLoss=0.5515 reg=0.8105 sal=0.0003  Step 10/20: preLoss=0.4514 reg=0.8084 sal=0.0003  Step 15/20: preLoss=0.5123 reg=0.8026 sal=0.0003  Step 20/20: preLoss=0.5105 reg=0.8028 sal=0.0002
+Epoch 37/150 | Loss=1.3653 preLoss=0.5580 | 11.8s | lr=0.000212
+
+  Step 5/20: preLoss=0.5687 reg=0.7990 sal=0.0003  Step 10/20: preLoss=0.5829 reg=0.7968 sal=0.0003  Step 15/20: preLoss=0.5379 reg=0.7938 sal=0.0003  Step 20/20: preLoss=0.5223 reg=0.7907 sal=0.0002
+Epoch 38/150 | Loss=1.3488 preLoss=0.5522 | 11.7s | lr=0.000204
+
+  Step 5/20: preLoss=0.4498 reg=0.7886 sal=0.0003  Step 10/20: preLoss=0.5275 reg=0.7853 sal=0.0003  Step 15/20: preLoss=0.6271 reg=0.7836 sal=0.0003  Step 20/20: preLoss=0.5517 reg=0.7804 sal=0.0002
+Epoch 39/150 | Loss=1.3027 preLoss=0.5169 | 11.8s | lr=0.000195
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1964 | HR@20=0.2898 | NDCG@10=0.1123 | NDCG@20=0.1357
+  No improvement. Patience: 2/20
+
+  Step 5/20: preLoss=0.4729 reg=0.7791 sal=0.0003  Step 10/20: preLoss=0.6303 reg=0.7764 sal=0.0003  Step 15/20: preLoss=0.5410 reg=0.7726 sal=0.0003  Step 20/20: preLoss=0.6390 reg=0.7720 sal=0.0002
+Epoch 40/150 | Loss=1.3082 preLoss=0.5316 | 12.0s | lr=0.000188
+
+  Step 5/20: preLoss=0.4920 reg=0.7686 sal=0.0003  Step 10/20: preLoss=0.5433 reg=0.7668 sal=0.0003  Step 15/20: preLoss=0.5882 reg=0.7644 sal=0.0003  Step 20/20: preLoss=0.5781 reg=0.7629 sal=0.0002
+Epoch 41/150 | Loss=1.2960 preLoss=0.5290 | 11.5s | lr=0.000180
+
+  Step 5/20: preLoss=0.5108 reg=0.7602 sal=0.0003  Step 10/20: preLoss=0.5269 reg=0.7587 sal=0.0003  Step 15/20: preLoss=0.4770 reg=0.7557 sal=0.0003  Step 20/20: preLoss=0.6543 reg=0.7537 sal=0.0001
+Epoch 42/150 | Loss=1.2816 preLoss=0.5234 | 11.4s | lr=0.000173
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2034 | HR@20=0.2920 | NDCG@10=0.1149 | NDCG@20=0.1372
+  No improvement. Patience: 3/20
+
+  Step 5/20: preLoss=0.5399 reg=0.7517 sal=0.0003  Step 10/20: preLoss=0.5507 reg=0.7494 sal=0.0003  Step 15/20: preLoss=0.5048 reg=0.7479 sal=0.0003  Step 20/20: preLoss=0.4631 reg=0.7459 sal=0.0002
+Epoch 43/150 | Loss=1.2666 preLoss=0.5166 | 11.7s | lr=0.000166
+
+  Step 5/20: preLoss=0.4825 reg=0.7444 sal=0.0003  Step 10/20: preLoss=0.4770 reg=0.7419 sal=0.0003  Step 15/20: preLoss=0.3937 reg=0.7407 sal=0.0003  Step 20/20: preLoss=0.5613 reg=0.7381 sal=0.0002
+Epoch 44/150 | Loss=1.2473 preLoss=0.5053 | 11.8s | lr=0.000159
+
+  Step 5/20: preLoss=0.4368 reg=0.7367 sal=0.0003  Step 10/20: preLoss=0.5448 reg=0.7341 sal=0.0003  Step 15/20: preLoss=0.4840 reg=0.7322 sal=0.0003  Step 20/20: preLoss=0.5634 reg=0.7312 sal=0.0002
+Epoch 45/150 | Loss=1.2471 preLoss=0.5127 | 11.6s | lr=0.000153
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.1967 | HR@20=0.2890 | NDCG@10=0.1114 | NDCG@20=0.1346
+  No improvement. Patience: 4/20
+
+  Step 5/20: preLoss=0.4076 reg=0.7286 sal=0.0003  Step 10/20: preLoss=0.4652 reg=0.7268 sal=0.0003  Step 15/20: preLoss=0.4599 reg=0.7241 sal=0.0003  Step 20/20: preLoss=0.5757 reg=0.7234 sal=0.0002
+Epoch 46/150 | Loss=1.2135 preLoss=0.4867 | 11.7s | lr=0.000147
+
+  Step 5/20: preLoss=0.5165 reg=0.7207 sal=0.0003  Step 10/20: preLoss=0.5555 reg=0.7194 sal=0.0003  Step 15/20: preLoss=0.4262 reg=0.7183 sal=0.0003  Step 20/20: preLoss=0.4297 reg=0.7157 sal=0.0002
+Epoch 47/150 | Loss=1.2045 preLoss=0.4849 | 11.6s | lr=0.000141
+
+  Step 5/20: preLoss=0.4696 reg=0.7153 sal=0.0003  Step 10/20: preLoss=0.3837 reg=0.7126 sal=0.0003  Step 15/20: preLoss=0.4788 reg=0.7116 sal=0.0003  Step 20/20: preLoss=0.3498 reg=0.7093 sal=0.0002
+Epoch 48/150 | Loss=1.1772 preLoss=0.4641 | 11.7s | lr=0.000135
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2010 | HR@20=0.2965 | NDCG@10=0.1146 | NDCG@20=0.1385
+  No improvement. Patience: 5/20
+
+  Step 5/20: preLoss=0.4709 reg=0.7078 sal=0.0003  Step 10/20: preLoss=0.5095 reg=0.7058 sal=0.0003  Step 15/20: preLoss=0.5463 reg=0.7049 sal=0.0003  Step 20/20: preLoss=0.5075 reg=0.7038 sal=0.0002
+Epoch 49/150 | Loss=1.1862 preLoss=0.4796 | 11.5s | lr=0.000130
+
+  Step 5/20: preLoss=0.5324 reg=0.7020 sal=0.0003  Step 10/20: preLoss=0.4590 reg=0.7007 sal=0.0003  Step 15/20: preLoss=0.4347 reg=0.6990 sal=0.0003  Step 20/20: preLoss=0.4497 reg=0.6974 sal=0.0001
+Epoch 50/150 | Loss=1.1819 preLoss=0.4811 | 11.9s | lr=0.000125
+
+  Step 5/20: preLoss=0.4389 reg=0.6956 sal=0.0003  Step 10/20: preLoss=0.3964 reg=0.6947 sal=0.0003  Step 15/20: preLoss=0.4591 reg=0.6938 sal=0.0003  Step 20/20: preLoss=0.4644 reg=0.6923 sal=0.0002
+Epoch 51/150 | Loss=1.1615 preLoss=0.4666 | 11.7s | lr=0.000120
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2063 | HR@20=0.3025 | NDCG@10=0.1167 | NDCG@20=0.1409
+  No improvement. Patience: 6/20
+
+  Step 5/20: preLoss=0.4398 reg=0.6907 sal=0.0003  Step 10/20: preLoss=0.4486 reg=0.6898 sal=0.0003  Step 15/20: preLoss=0.5186 reg=0.6884 sal=0.0003  Step 20/20: preLoss=0.4657 reg=0.6873 sal=0.0002
+Epoch 52/150 | Loss=1.1659 preLoss=0.4761 | 11.8s | lr=0.000115
+
+  Step 5/20: preLoss=0.5010 reg=0.6849 sal=0.0003  Step 10/20: preLoss=0.5102 reg=0.6840 sal=0.0003  Step 15/20: preLoss=0.4824 reg=0.6829 sal=0.0003  Step 20/20: preLoss=0.4296 reg=0.6820 sal=0.0002
+Epoch 53/150 | Loss=1.1447 preLoss=0.4603 | 11.4s | lr=0.000110
+
+  Step 5/20: preLoss=0.5047 reg=0.6802 sal=0.0003  Step 10/20: preLoss=0.5354 reg=0.6799 sal=0.0003  Step 15/20: preLoss=0.5024 reg=0.6783 sal=0.0003  Step 20/20: preLoss=0.4133 reg=0.6767 sal=0.0002
+Epoch 54/150 | Loss=1.1519 preLoss=0.4723 | 11.7s | lr=0.000106
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2033 | HR@20=0.2995 | NDCG@10=0.1154 | NDCG@20=0.1396
+  No improvement. Patience: 7/20
+
+  Step 5/20: preLoss=0.4422 reg=0.6765 sal=0.0003  Step 10/20: preLoss=0.4881 reg=0.6743 sal=0.0003  Step 15/20: preLoss=0.5139 reg=0.6738 sal=0.0003  Step 20/20: preLoss=0.4472 reg=0.6728 sal=0.0002
+Epoch 55/150 | Loss=1.1517 preLoss=0.4766 | 12.0s | lr=0.000102
+
+  Step 5/20: preLoss=0.4877 reg=0.6715 sal=0.0003  Step 10/20: preLoss=0.4409 reg=0.6706 sal=0.0003  Step 15/20: preLoss=0.4334 reg=0.6695 sal=0.0003  Step 20/20: preLoss=0.6276 reg=0.6678 sal=0.0002
+Epoch 56/150 | Loss=1.1316 preLoss=0.4609 | 11.9s | lr=0.000098
+
+  Step 5/20: preLoss=0.4480 reg=0.6673 sal=0.0003  Step 10/20: preLoss=0.4469 reg=0.6662 sal=0.0003  Step 15/20: preLoss=0.4506 reg=0.6653 sal=0.0003  Step 20/20: preLoss=0.4735 reg=0.6637 sal=0.0002
+Epoch 57/150 | Loss=1.1129 preLoss=0.4465 | 11.8s | lr=0.000094
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2017 | HR@20=0.2971 | NDCG@10=0.1142 | NDCG@20=0.1382
+  No improvement. Patience: 8/20
+
+  Step 5/20: preLoss=0.4049 reg=0.6631 sal=0.0003  Step 10/20: preLoss=0.4448 reg=0.6621 sal=0.0003  Step 15/20: preLoss=0.4876 reg=0.6619 sal=0.0003  Step 20/20: preLoss=0.3877 reg=0.6604 sal=0.0002
+Epoch 58/150 | Loss=1.1171 preLoss=0.4546 | 11.8s | lr=0.000090
+
+  Step 5/20: preLoss=0.4534 reg=0.6596 sal=0.0003  Step 10/20: preLoss=0.4975 reg=0.6585 sal=0.0003  Step 15/20: preLoss=0.3701 reg=0.6576 sal=0.0003  Step 20/20: preLoss=0.3600 reg=0.6564 sal=0.0001
+Epoch 59/150 | Loss=1.1009 preLoss=0.4421 | 11.8s | lr=0.000086
+
+  Step 5/20: preLoss=0.4252 reg=0.6566 sal=0.0003  Step 10/20: preLoss=0.3658 reg=0.6549 sal=0.0003  Step 15/20: preLoss=0.5780 reg=0.6549 sal=0.0003  Step 20/20: preLoss=0.4136 reg=0.6533 sal=0.0002
+Epoch 60/150 | Loss=1.1351 preLoss=0.4796 | 12.2s | lr=0.000083
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2076 | HR@20=0.3046 | NDCG@10=0.1184 | NDCG@20=0.1429
+  >>> New best Val NDCG@10=0.1184. Model saved.
+
+  Step 5/20: preLoss=0.3898 reg=0.6531 sal=0.0003  Step 10/20: preLoss=0.5191 reg=0.6514 sal=0.0003  Step 15/20: preLoss=0.4959 reg=0.6513 sal=0.0003  Step 20/20: preLoss=0.3815 reg=0.6499 sal=0.0002
+Epoch 61/150 | Loss=1.0944 preLoss=0.4424 | 12.0s | lr=0.000080
+
+  Step 5/20: preLoss=0.3924 reg=0.6495 sal=0.0003  Step 10/20: preLoss=0.3914 reg=0.6486 sal=0.0003  Step 15/20: preLoss=0.4401 reg=0.6475 sal=0.0003  Step 20/20: preLoss=0.5023 reg=0.6469 sal=0.0001
+Epoch 62/150 | Loss=1.0917 preLoss=0.4430 | 12.1s | lr=0.000076
+
+  Step 5/20: preLoss=0.4770 reg=0.6457 sal=0.0003  Step 10/20: preLoss=0.5065 reg=0.6454 sal=0.0003  Step 15/20: preLoss=0.4729 reg=0.6445 sal=0.0003  Step 20/20: preLoss=0.4672 reg=0.6438 sal=0.0002
+Epoch 63/150 | Loss=1.0941 preLoss=0.4486 | 11.8s | lr=0.000073
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2039 | HR@20=0.2964 | NDCG@10=0.1164 | NDCG@20=0.1398
+  No improvement. Patience: 1/20
+
+  Step 5/20: preLoss=0.3949 reg=0.6431 sal=0.0003  Step 10/20: preLoss=0.5128 reg=0.6425 sal=0.0003  Step 15/20: preLoss=0.5046 reg=0.6415 sal=0.0003  Step 20/20: preLoss=0.4704 reg=0.6410 sal=0.0002
+Epoch 64/150 | Loss=1.0949 preLoss=0.4523 | 11.8s | lr=0.000070
+
+  Step 5/20: preLoss=0.3948 reg=0.6402 sal=0.0003  Step 10/20: preLoss=0.4296 reg=0.6396 sal=0.0003  Step 15/20: preLoss=0.4000 reg=0.6390 sal=0.0003  Step 20/20: preLoss=0.4538 reg=0.6382 sal=0.0002
+Epoch 65/150 | Loss=1.0911 preLoss=0.4513 | 11.7s | lr=0.000068
+
+  Step 5/20: preLoss=0.3517 reg=0.6376 sal=0.0003  Step 10/20: preLoss=0.4196 reg=0.6368 sal=0.0003  Step 15/20: preLoss=0.4596 reg=0.6364 sal=0.0003  Step 20/20: preLoss=0.5300 reg=0.6356 sal=0.0002
+Epoch 66/150 | Loss=1.0917 preLoss=0.4546 | 11.4s | lr=0.000065
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2107 | HR@20=0.3084 | NDCG@10=0.1207 | NDCG@20=0.1453
+  >>> New best Val NDCG@10=0.1207. Model saved.
+
+  Step 5/20: preLoss=0.4747 reg=0.6350 sal=0.0003  Step 10/20: preLoss=0.4376 reg=0.6345 sal=0.0003  Step 15/20: preLoss=0.5307 reg=0.6341 sal=0.0003  Step 20/20: preLoss=0.3992 reg=0.6333 sal=0.0002
+Epoch 67/150 | Loss=1.0940 preLoss=0.4592 | 11.5s | lr=0.000062
+
+  Step 5/20: preLoss=0.4352 reg=0.6328 sal=0.0003  Step 10/20: preLoss=0.4989 reg=0.6322 sal=0.0003  Step 15/20: preLoss=0.4782 reg=0.6317 sal=0.0003  Step 20/20: preLoss=0.4359 reg=0.6310 sal=0.0002
+Epoch 68/150 | Loss=1.0912 preLoss=0.4587 | 11.6s | lr=0.000060
+
+  Step 5/20: preLoss=0.4195 reg=0.6305 sal=0.0003  Step 10/20: preLoss=0.4885 reg=0.6298 sal=0.0003  Step 15/20: preLoss=0.4618 reg=0.6294 sal=0.0003  Step 20/20: preLoss=0.6518 reg=0.6286 sal=0.0002
+Epoch 69/150 | Loss=1.0958 preLoss=0.4656 | 11.6s | lr=0.000057
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2074 | HR@20=0.3056 | NDCG@10=0.1187 | NDCG@20=0.1434
+  No improvement. Patience: 1/20
+
+  Step 5/20: preLoss=0.4665 reg=0.6280 sal=0.0003  Step 10/20: preLoss=0.4070 reg=0.6276 sal=0.0003  Step 15/20: preLoss=0.5295 reg=0.6271 sal=0.0003  Step 20/20: preLoss=0.3943 reg=0.6266 sal=0.0002
+Epoch 70/150 | Loss=1.0728 preLoss=0.4450 | 11.9s | lr=0.000055
+
+  Step 5/20: preLoss=0.3401 reg=0.6259 sal=0.0003  Step 10/20: preLoss=0.4438 reg=0.6252 sal=0.0003  Step 15/20: preLoss=0.4329 reg=0.6249 sal=0.0003  Step 20/20: preLoss=0.3718 reg=0.6243 sal=0.0002
+Epoch 71/150 | Loss=1.0486 preLoss=0.4231 | 12.1s | lr=0.000053
+
+  Step 5/20: preLoss=0.4950 reg=0.6238 sal=0.0003  Step 10/20: preLoss=0.5071 reg=0.6233 sal=0.0003  Step 15/20: preLoss=0.4306 reg=0.6231 sal=0.0003  Step 20/20: preLoss=0.4562 reg=0.6222 sal=0.0002
+Epoch 72/150 | Loss=1.0907 preLoss=0.4671 | 12.0s | lr=0.000051
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2121 | HR@20=0.3048 | NDCG@10=0.1203 | NDCG@20=0.1437
+  No improvement. Patience: 2/20
+
+  Step 5/20: preLoss=0.4790 reg=0.6216 sal=0.0003  Step 10/20: preLoss=0.4389 reg=0.6212 sal=0.0003  Step 15/20: preLoss=0.4948 reg=0.6209 sal=0.0003  Step 20/20: preLoss=0.3320 reg=0.6204 sal=0.0001
+Epoch 73/150 | Loss=1.0577 preLoss=0.4362 | 11.6s | lr=0.000049
+
+  Step 5/20: preLoss=0.4400 reg=0.6197 sal=0.0003  Step 10/20: preLoss=0.5831 reg=0.6194 sal=0.0003  Step 15/20: preLoss=0.4637 reg=0.6189 sal=0.0003  Step 20/20: preLoss=0.3447 reg=0.6183 sal=0.0002
+Epoch 74/150 | Loss=1.0661 preLoss=0.4465 | 11.4s | lr=0.000047
+
+  Step 5/20: preLoss=0.4119 reg=0.6179 sal=0.0003  Step 10/20: preLoss=0.4500 reg=0.6174 sal=0.0003  Step 15/20: preLoss=0.3884 reg=0.6170 sal=0.0003  Step 20/20: preLoss=0.3801 reg=0.6166 sal=0.0002
+Epoch 75/150 | Loss=1.0411 preLoss=0.4234 | 11.5s | lr=0.000045
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2099 | HR@20=0.3077 | NDCG@10=0.1203 | NDCG@20=0.1449
+  No improvement. Patience: 3/20
+
+  Step 5/20: preLoss=0.4015 reg=0.6162 sal=0.0003  Step 10/20: preLoss=0.4096 reg=0.6158 sal=0.0003  Step 15/20: preLoss=0.3682 reg=0.6154 sal=0.0003  Step 20/20: preLoss=0.3680 reg=0.6149 sal=0.0001
+Epoch 76/150 | Loss=1.0678 preLoss=0.4517 | 11.3s | lr=0.000043
+
+  Step 5/20: preLoss=0.3979 reg=0.6147 sal=0.0003  Step 10/20: preLoss=0.3837 reg=0.6141 sal=0.0003  Step 15/20: preLoss=0.4955 reg=0.6136 sal=0.0003  Step 20/20: preLoss=0.5113 reg=0.6133 sal=0.0001
+Epoch 77/150 | Loss=1.0573 preLoss=0.4430 | 11.6s | lr=0.000041
+
+  Step 5/20: preLoss=0.4112 reg=0.6130 sal=0.0003  Step 10/20: preLoss=0.3810 reg=0.6126 sal=0.0003  Step 15/20: preLoss=0.4168 reg=0.6120 sal=0.0003  Step 20/20: preLoss=0.4544 reg=0.6117 sal=0.0002
+Epoch 78/150 | Loss=1.0470 preLoss=0.4342 | 11.6s | lr=0.000040
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2079 | HR@20=0.3074 | NDCG@10=0.1184 | NDCG@20=0.1434
+  No improvement. Patience: 4/20
+
+  Step 5/20: preLoss=0.3960 reg=0.6115 sal=0.0003  Step 10/20: preLoss=0.4925 reg=0.6110 sal=0.0003  Step 15/20: preLoss=0.5531 reg=0.6106 sal=0.0003  Step 20/20: preLoss=0.4040 reg=0.6104 sal=0.0001
+Epoch 79/150 | Loss=1.0467 preLoss=0.4354 | 11.8s | lr=0.000038
+
+  Step 5/20: preLoss=0.4355 reg=0.6099 sal=0.0003  Step 10/20: preLoss=0.4266 reg=0.6095 sal=0.0003  Step 15/20: preLoss=0.4326 reg=0.6092 sal=0.0003  Step 20/20: preLoss=0.3655 reg=0.6087 sal=0.0001
+Epoch 80/150 | Loss=1.0256 preLoss=0.4159 | 11.5s | lr=0.000037
+
+  Step 5/20: preLoss=0.4179 reg=0.6085 sal=0.0003  Step 10/20: preLoss=0.4148 reg=0.6082 sal=0.0003  Step 15/20: preLoss=0.4210 reg=0.6077 sal=0.0003  Step 20/20: preLoss=0.4249 reg=0.6074 sal=0.0002
+Epoch 81/150 | Loss=1.0347 preLoss=0.4263 | 11.5s | lr=0.000035
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2051 | HR@20=0.3021 | NDCG@10=0.1165 | NDCG@20=0.1409
+  No improvement. Patience: 5/20
+
+  Step 5/20: preLoss=0.4251 reg=0.6070 sal=0.0003  Step 10/20: preLoss=0.4019 reg=0.6068 sal=0.0003  Step 15/20: preLoss=0.4699 reg=0.6064 sal=0.0003  Step 20/20: preLoss=0.4447 reg=0.6062 sal=0.0001
+Epoch 82/150 | Loss=1.0496 preLoss=0.4426 | 12.0s | lr=0.000034
+
+  Step 5/20: preLoss=0.4092 reg=0.6058 sal=0.0003  Step 10/20: preLoss=0.3936 reg=0.6055 sal=0.0003  Step 15/20: preLoss=0.4803 reg=0.6051 sal=0.0003  Step 20/20: preLoss=0.4926 reg=0.6048 sal=0.0001
+Epoch 83/150 | Loss=1.0444 preLoss=0.4387 | 11.7s | lr=0.000032
+
+  Step 5/20: preLoss=0.3965 reg=0.6047 sal=0.0003  Step 10/20: preLoss=0.4221 reg=0.6043 sal=0.0003  Step 15/20: preLoss=0.4124 reg=0.6040 sal=0.0003  Step 20/20: preLoss=0.4823 reg=0.6038 sal=0.0002
+Epoch 84/150 | Loss=1.0407 preLoss=0.4362 | 11.5s | lr=0.000031
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2025 | HR@20=0.2993 | NDCG@10=0.1159 | NDCG@20=0.1403
+  No improvement. Patience: 6/20
+
+  Step 5/20: preLoss=0.4611 reg=0.6034 sal=0.0003  Step 10/20: preLoss=0.4272 reg=0.6031 sal=0.0003  Step 15/20: preLoss=0.4223 reg=0.6029 sal=0.0003  Step 20/20: preLoss=0.4481 reg=0.6025 sal=0.0002
+Epoch 85/150 | Loss=1.0354 preLoss=0.4319 | 12.1s | lr=0.000030
+
+  Step 5/20: preLoss=0.3825 reg=0.6022 sal=0.0003  Step 10/20: preLoss=0.4592 reg=0.6020 sal=0.0003  Step 15/20: preLoss=0.4119 reg=0.6017 sal=0.0003  Step 20/20: preLoss=0.5630 reg=0.6014 sal=0.0002
+Epoch 86/150 | Loss=1.0339 preLoss=0.4317 | 11.7s | lr=0.000029
+
+  Step 5/20: preLoss=0.4460 reg=0.6012 sal=0.0003  Step 10/20: preLoss=0.4187 reg=0.6009 sal=0.0003  Step 15/20: preLoss=0.3880 reg=0.6007 sal=0.0003  Step 20/20: preLoss=0.3840 reg=0.6004 sal=0.0001
+Epoch 87/150 | Loss=1.0254 preLoss=0.4242 | 11.7s | lr=0.000028
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2080 | HR@20=0.3076 | NDCG@10=0.1185 | NDCG@20=0.1435
+  No improvement. Patience: 7/20
+
+  Step 5/20: preLoss=0.4275 reg=0.6002 sal=0.0003  Step 10/20: preLoss=0.4304 reg=0.5998 sal=0.0003  Step 15/20: preLoss=0.4428 reg=0.5996 sal=0.0003  Step 20/20: preLoss=0.4938 reg=0.5994 sal=0.0002
+Epoch 88/150 | Loss=1.0235 preLoss=0.4234 | 11.7s | lr=0.000026
+
+  Step 5/20: preLoss=0.4838 reg=0.5991 sal=0.0003  Step 10/20: preLoss=0.4402 reg=0.5988 sal=0.0003  Step 15/20: preLoss=0.4145 reg=0.5986 sal=0.0003  Step 20/20: preLoss=0.4018 reg=0.5983 sal=0.0002
+Epoch 89/150 | Loss=1.0191 preLoss=0.4200 | 12.0s | lr=0.000025
+
+  Step 5/20: preLoss=0.4407 reg=0.5981 sal=0.0003  Step 10/20: preLoss=0.4267 reg=0.5978 sal=0.0003  Step 15/20: preLoss=0.4222 reg=0.5976 sal=0.0003  Step 20/20: preLoss=0.4178 reg=0.5974 sal=0.0001
+Epoch 90/150 | Loss=1.0049 preLoss=0.4068 | 12.2s | lr=0.000024
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2073 | HR@20=0.3045 | NDCG@10=0.1184 | NDCG@20=0.1429
+  No improvement. Patience: 8/20
+
+  Step 5/20: preLoss=0.4435 reg=0.5972 sal=0.0003  Step 10/20: preLoss=0.3931 reg=0.5969 sal=0.0003  Step 15/20: preLoss=0.3961 reg=0.5967 sal=0.0003  Step 20/20: preLoss=0.4935 reg=0.5964 sal=0.0002
+Epoch 91/150 | Loss=1.0254 preLoss=0.4282 | 12.1s | lr=0.000023
+
+  Step 5/20: preLoss=0.4505 reg=0.5962 sal=0.0003  Step 10/20: preLoss=0.3565 reg=0.5960 sal=0.0003  Step 15/20: preLoss=0.4533 reg=0.5958 sal=0.0003  Step 20/20: preLoss=0.4445 reg=0.5956 sal=0.0002
+Epoch 92/150 | Loss=1.0266 preLoss=0.4304 | 11.9s | lr=0.000022
+
+  Step 5/20: preLoss=0.4782 reg=0.5954 sal=0.0003  Step 10/20: preLoss=0.4063 reg=0.5952 sal=0.0003  Step 15/20: preLoss=0.4116 reg=0.5950 sal=0.0003  Step 20/20: preLoss=0.4228 reg=0.5947 sal=0.0002
+Epoch 93/150 | Loss=1.0176 preLoss=0.4221 | 11.8s | lr=0.000022
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2102 | HR@20=0.3081 | NDCG@10=0.1203 | NDCG@20=0.1449
+  No improvement. Patience: 9/20
+
+  Step 5/20: preLoss=0.4322 reg=0.5946 sal=0.0003  Step 10/20: preLoss=0.4550 reg=0.5944 sal=0.0003  Step 15/20: preLoss=0.4217 reg=0.5942 sal=0.0003  Step 20/20: preLoss=0.4417 reg=0.5940 sal=0.0002
+Epoch 94/150 | Loss=1.0323 preLoss=0.4377 | 11.8s | lr=0.000021
+
+  Step 5/20: preLoss=0.3856 reg=0.5938 sal=0.0003  Step 10/20: preLoss=0.3932 reg=0.5936 sal=0.0003  Step 15/20: preLoss=0.4345 reg=0.5934 sal=0.0003  Step 20/20: preLoss=0.4029 reg=0.5932 sal=0.0001
+Epoch 95/150 | Loss=0.9998 preLoss=0.4059 | 11.9s | lr=0.000020
+
+  Step 5/20: preLoss=0.4224 reg=0.5931 sal=0.0003  Step 10/20: preLoss=0.4279 reg=0.5929 sal=0.0003  Step 15/20: preLoss=0.4065 reg=0.5927 sal=0.0003  Step 20/20: preLoss=0.4590 reg=0.5925 sal=0.0002
+Epoch 96/150 | Loss=1.0211 preLoss=0.4280 | 11.8s | lr=0.000019
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2079 | HR@20=0.3056 | NDCG@10=0.1181 | NDCG@20=0.1426
+  No improvement. Patience: 10/20
+
+  Step 5/20: preLoss=0.4608 reg=0.5924 sal=0.0003  Step 10/20: preLoss=0.3922 reg=0.5922 sal=0.0003  Step 15/20: preLoss=0.4279 reg=0.5920 sal=0.0003  Step 20/20: preLoss=0.4026 reg=0.5918 sal=0.0002
+Epoch 97/150 | Loss=1.0195 preLoss=0.4270 | 12.2s | lr=0.000018
+
+  Step 5/20: preLoss=0.4342 reg=0.5916 sal=0.0003  Step 10/20: preLoss=0.3377 reg=0.5915 sal=0.0003  Step 15/20: preLoss=0.3796 reg=0.5913 sal=0.0003  Step 20/20: preLoss=0.4261 reg=0.5911 sal=0.0002
+Epoch 98/150 | Loss=1.0095 preLoss=0.4178 | 12.1s | lr=0.000018
+
+  Step 5/20: preLoss=0.3401 reg=0.5910 sal=0.0003  Step 10/20: preLoss=0.4852 reg=0.5908 sal=0.0003  Step 15/20: preLoss=0.3788 reg=0.5907 sal=0.0003  Step 20/20: preLoss=0.5274 reg=0.5905 sal=0.0002
+Epoch 99/150 | Loss=1.0200 preLoss=0.4289 | 12.0s | lr=0.000017
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2080 | HR@20=0.3067 | NDCG@10=0.1193 | NDCG@20=0.1442
+  No improvement. Patience: 11/20
+
+  Step 5/20: preLoss=0.4713 reg=0.5904 sal=0.0003  Step 10/20: preLoss=0.3665 reg=0.5902 sal=0.0003  Step 15/20: preLoss=0.4105 reg=0.5900 sal=0.0003  Step 20/20: preLoss=0.4039 reg=0.5899 sal=0.0002
+Epoch 100/150 | Loss=1.0107 preLoss=0.4202 | 11.6s | lr=0.000016
+
+  Step 5/20: preLoss=0.4458 reg=0.5898 sal=0.0003  Step 10/20: preLoss=0.4788 reg=0.5896 sal=0.0003  Step 15/20: preLoss=0.4227 reg=0.5895 sal=0.0003  Step 20/20: preLoss=0.4689 reg=0.5893 sal=0.0001
+Epoch 101/150 | Loss=1.0168 preLoss=0.4269 | 11.4s | lr=0.000016
+
+  Step 5/20: preLoss=0.4453 reg=0.5892 sal=0.0003  Step 10/20: preLoss=0.3545 reg=0.5891 sal=0.0003  Step 15/20: preLoss=0.4787 reg=0.5889 sal=0.0003  Step 20/20: preLoss=0.3787 reg=0.5888 sal=0.0001
+Epoch 102/150 | Loss=1.0159 preLoss=0.4266 | 11.5s | lr=0.000015
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2083 | HR@20=0.3061 | NDCG@10=0.1189 | NDCG@20=0.1435
+  No improvement. Patience: 12/20
+
+  Step 5/20: preLoss=0.3747 reg=0.5887 sal=0.0003  Step 10/20: preLoss=0.3916 reg=0.5886 sal=0.0003  Step 15/20: preLoss=0.4561 reg=0.5884 sal=0.0003  Step 20/20: preLoss=0.3546 reg=0.5883 sal=0.0002
+Epoch 103/150 | Loss=1.0262 preLoss=0.4374 | 11.8s | lr=0.000014
+
+  Step 5/20: preLoss=0.4279 reg=0.5882 sal=0.0003  Step 10/20: preLoss=0.4305 reg=0.5880 sal=0.0003  Step 15/20: preLoss=0.4409 reg=0.5879 sal=0.0003  Step 20/20: preLoss=0.4612 reg=0.5878 sal=0.0001
+Epoch 104/150 | Loss=1.0013 preLoss=0.4130 | 11.6s | lr=0.000014
+
+  Step 5/20: preLoss=0.4492 reg=0.5877 sal=0.0003  Step 10/20: preLoss=0.4942 reg=0.5875 sal=0.0003  Step 15/20: preLoss=0.4044 reg=0.5874 sal=0.0003  Step 20/20: preLoss=0.4483 reg=0.5873 sal=0.0002
+Epoch 105/150 | Loss=1.0136 preLoss=0.4257 | 11.9s | lr=0.000013
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2059 | HR@20=0.3053 | NDCG@10=0.1180 | NDCG@20=0.1430
+  No improvement. Patience: 13/20
+
+  Step 5/20: preLoss=0.4459 reg=0.5872 sal=0.0003  Step 10/20: preLoss=0.3585 reg=0.5871 sal=0.0003  Step 15/20: preLoss=0.4455 reg=0.5869 sal=0.0003  Step 20/20: preLoss=0.4246 reg=0.5868 sal=0.0002
+Epoch 106/150 | Loss=1.0141 preLoss=0.4268 | 12.1s | lr=0.000013
+
+  Step 5/20: preLoss=0.4423 reg=0.5867 sal=0.0003  Step 10/20: preLoss=0.3866 reg=0.5866 sal=0.0003  Step 15/20: preLoss=0.4720 reg=0.5865 sal=0.0003  Step 20/20: preLoss=0.4963 reg=0.5863 sal=0.0002
+Epoch 107/150 | Loss=1.0055 preLoss=0.4186 | 11.7s | lr=0.000012
+
+  Step 5/20: preLoss=0.4237 reg=0.5863 sal=0.0003  Step 10/20: preLoss=0.4151 reg=0.5862 sal=0.0003  Step 15/20: preLoss=0.4366 reg=0.5861 sal=0.0003  Step 20/20: preLoss=0.4922 reg=0.5859 sal=0.0002
+Epoch 108/150 | Loss=1.0172 preLoss=0.4308 | 11.7s | lr=0.000012
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2080 | HR@20=0.3055 | NDCG@10=0.1186 | NDCG@20=0.1431
+  No improvement. Patience: 14/20
+
+  Step 5/20: preLoss=0.3912 reg=0.5859 sal=0.0003  Step 10/20: preLoss=0.4130 reg=0.5857 sal=0.0003  Step 15/20: preLoss=0.4471 reg=0.5856 sal=0.0003  Step 20/20: preLoss=0.3985 reg=0.5855 sal=0.0002
+Epoch 109/150 | Loss=1.0086 preLoss=0.4226 | 12.0s | lr=0.000011
+
+  Step 5/20: preLoss=0.3880 reg=0.5854 sal=0.0003  Step 10/20: preLoss=0.4429 reg=0.5853 sal=0.0003  Step 15/20: preLoss=0.4092 reg=0.5852 sal=0.0003  Step 20/20: preLoss=0.5227 reg=0.5851 sal=0.0001
+Epoch 110/150 | Loss=1.0076 preLoss=0.4220 | 11.9s | lr=0.000011
+
+  Step 5/20: preLoss=0.3697 reg=0.5851 sal=0.0003  Step 10/20: preLoss=0.3288 reg=0.5849 sal=0.0003  Step 15/20: preLoss=0.4028 reg=0.5848 sal=0.0003  Step 20/20: preLoss=0.5244 reg=0.5847 sal=0.0002
+Epoch 111/150 | Loss=1.0022 preLoss=0.4170 | 11.8s | lr=0.000010
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2084 | HR@20=0.3087 | NDCG@10=0.1192 | NDCG@20=0.1445
+  No improvement. Patience: 15/20
+
+  Step 5/20: preLoss=0.3827 reg=0.5846 sal=0.0003  Step 10/20: preLoss=0.4052 reg=0.5845 sal=0.0003  Step 15/20: preLoss=0.4426 reg=0.5844 sal=0.0003  Step 20/20: preLoss=0.3585 reg=0.5843 sal=0.0001
+Epoch 112/150 | Loss=0.9965 preLoss=0.4117 | 11.8s | lr=0.000010
+
+  Step 5/20: preLoss=0.4840 reg=0.5843 sal=0.0003  Step 10/20: preLoss=0.3855 reg=0.5842 sal=0.0003  Step 15/20: preLoss=0.4779 reg=0.5841 sal=0.0003  Step 20/20: preLoss=0.4463 reg=0.5840 sal=0.0002
+Epoch 113/150 | Loss=1.0069 preLoss=0.4224 | 11.5s | lr=0.000010
+
+  Step 5/20: preLoss=0.4454 reg=0.5839 sal=0.0003  Step 10/20: preLoss=0.4475 reg=0.5838 sal=0.0003  Step 15/20: preLoss=0.3736 reg=0.5838 sal=0.0003  Step 20/20: preLoss=0.4050 reg=0.5837 sal=0.0001
+Epoch 114/150 | Loss=1.0068 preLoss=0.4227 | 11.4s | lr=0.000009
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2083 | HR@20=0.3056 | NDCG@10=0.1189 | NDCG@20=0.1434
+  No improvement. Patience: 16/20
+
+  Step 5/20: preLoss=0.4726 reg=0.5836 sal=0.0003  Step 10/20: preLoss=0.3969 reg=0.5835 sal=0.0003  Step 15/20: preLoss=0.4322 reg=0.5834 sal=0.0003  Step 20/20: preLoss=0.3699 reg=0.5834 sal=0.0002
+Epoch 115/150 | Loss=1.0076 preLoss=0.4238 | 11.7s | lr=0.000009
+
+  Step 5/20: preLoss=0.4680 reg=0.5833 sal=0.0003  Step 10/20: preLoss=0.4759 reg=0.5832 sal=0.0003  Step 15/20: preLoss=0.4325 reg=0.5832 sal=0.0003  Step 20/20: preLoss=0.4349 reg=0.5831 sal=0.0002
+Epoch 116/150 | Loss=1.0260 preLoss=0.4425 | 11.9s | lr=0.000008
+
+  Step 5/20: preLoss=0.4318 reg=0.5830 sal=0.0003  Step 10/20: preLoss=0.3764 reg=0.5829 sal=0.0003  Step 15/20: preLoss=0.4758 reg=0.5828 sal=0.0003  Step 20/20: preLoss=0.3711 reg=0.5828 sal=0.0001
+Epoch 117/150 | Loss=0.9997 preLoss=0.4165 | 11.6s | lr=0.000008
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2068 | HR@20=0.3054 | NDCG@10=0.1184 | NDCG@20=0.1433
+  No improvement. Patience: 17/20
+
+  Step 5/20: preLoss=0.3854 reg=0.5827 sal=0.0003  Step 10/20: preLoss=0.3414 reg=0.5826 sal=0.0003  Step 15/20: preLoss=0.4182 reg=0.5826 sal=0.0003  Step 20/20: preLoss=0.3610 reg=0.5825 sal=0.0002
+Epoch 118/150 | Loss=1.0007 preLoss=0.4178 | 12.0s | lr=0.000008
+
+  Step 5/20: preLoss=0.4892 reg=0.5824 sal=0.0003  Step 10/20: preLoss=0.4061 reg=0.5823 sal=0.0003  Step 15/20: preLoss=0.4599 reg=0.5823 sal=0.0003  Step 20/20: preLoss=0.4283 reg=0.5822 sal=0.0001
+Epoch 119/150 | Loss=0.9982 preLoss=0.4156 | 11.5s | lr=0.000007
+
+  Step 5/20: preLoss=0.3401 reg=0.5822 sal=0.0003  Step 10/20: preLoss=0.4200 reg=0.5821 sal=0.0003  Step 15/20: preLoss=0.4760 reg=0.5820 sal=0.0003  Step 20/20: preLoss=0.3736 reg=0.5820 sal=0.0001
+Epoch 120/150 | Loss=0.9986 preLoss=0.4162 | 11.3s | lr=0.000007
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2087 | HR@20=0.3069 | NDCG@10=0.1194 | NDCG@20=0.1442
+  No improvement. Patience: 18/20
+
+  Step 5/20: preLoss=0.5165 reg=0.5819 sal=0.0003  Step 10/20: preLoss=0.4531 reg=0.5818 sal=0.0003  Step 15/20: preLoss=0.4836 reg=0.5818 sal=0.0003  Step 20/20: preLoss=0.3868 reg=0.5817 sal=0.0001
+Epoch 121/150 | Loss=1.0008 preLoss=0.4186 | 11.4s | lr=0.000007
+
+  Step 5/20: preLoss=0.4172 reg=0.5817 sal=0.0003  Step 10/20: preLoss=0.4110 reg=0.5816 sal=0.0003  Step 15/20: preLoss=0.3692 reg=0.5815 sal=0.0003  Step 20/20: preLoss=0.4169 reg=0.5815 sal=0.0002
+Epoch 122/150 | Loss=0.9912 preLoss=0.4094 | 11.5s | lr=0.000007
+
+  Step 5/20: preLoss=0.4041 reg=0.5814 sal=0.0003  Step 10/20: preLoss=0.4527 reg=0.5814 sal=0.0003  Step 15/20: preLoss=0.4732 reg=0.5813 sal=0.0003  Step 20/20: preLoss=0.4226 reg=0.5812 sal=0.0002
+Epoch 123/150 | Loss=1.0035 preLoss=0.4219 | 11.4s | lr=0.000006
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2090 | HR@20=0.3062 | NDCG@10=0.1196 | NDCG@20=0.1441
+  No improvement. Patience: 19/20
+
+  Step 5/20: preLoss=0.4334 reg=0.5812 sal=0.0003  Step 10/20: preLoss=0.4407 reg=0.5811 sal=0.0003  Step 15/20: preLoss=0.4594 reg=0.5811 sal=0.0003  Step 20/20: preLoss=0.3556 reg=0.5810 sal=0.0001
+Epoch 124/150 | Loss=0.9945 preLoss=0.4131 | 11.8s | lr=0.000006
+
+  Step 5/20: preLoss=0.3963 reg=0.5810 sal=0.0003  Step 10/20: preLoss=0.4058 reg=0.5809 sal=0.0003  Step 15/20: preLoss=0.4461 reg=0.5809 sal=0.0003  Step 20/20: preLoss=0.4408 reg=0.5808 sal=0.0001
+Epoch 125/150 | Loss=0.9977 preLoss=0.4165 | 11.8s | lr=0.000006
+
+  Step 5/20: preLoss=0.4256 reg=0.5808 sal=0.0003  Step 10/20: preLoss=0.3958 reg=0.5807 sal=0.0003  Step 15/20: preLoss=0.4205 reg=0.5807 sal=0.0003  Step 20/20: preLoss=0.3897 reg=0.5806 sal=0.0002
+Epoch 126/150 | Loss=0.9958 preLoss=0.4148 | 11.7s | lr=0.000006
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2085 | HR@20=0.3057 | NDCG@10=0.1190 | NDCG@20=0.1434
+  No improvement. Patience: 20/20
+
+Early stopping at epoch 126.
+======================================================================
+Loading best model from epoch 66...
+Best Val (epoch 66): HR@10=0.2107 | HR@20=0.3084 | NDCG@10=0.1207 | NDCG@20=0.1453
+
+Final Test Evaluation:
+  Test step 10/20  Test step 20/20
+  Test: HR@10=0.1898 | HR@20=0.2774 | NDCG@10=0.1057 | NDCG@20=0.1276
+
+Final Val Evaluation (sanity check):
+  Val step 10/20  Val step 20/20
+  Val:  HR@10=0.2107 | HR@20=0.3084 | NDCG@10=0.1207 | NDCG@20=0.1453
+
+Results saved to /workspace/gg/selfGNN-Feature/../Results/yelp_merchant_node_feature.json

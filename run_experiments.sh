@@ -13,7 +13,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 DEVICE="cuda"
 EPOCH=150
-PYTHON="/opt/anaconda3/envs/selfgnn/bin/python3"
+PYTHON="/venv/main/bin/python3"
 
 # Parse optional flags
 while [[ $# -gt 0 ]]; do
