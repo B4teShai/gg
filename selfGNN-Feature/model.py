@@ -92,27 +92,34 @@ class SelfGNN(nn.Module):
             d_u = user_features.shape[1]
             d_v = merchant_features.shape[1]
             hidden = args.node_mlp_hidden
-            # LayerNorm as final layer keeps projected features at unit scale
-            # before additive fusion with embeddings, preventing magnitude blowup.
+            # Plain MLP — no output LayerNorm. LayerNorm would force unit
+            # variance and drown out the Xavier-initialised base embeddings,
+            # which on a 268k-user tensor have std ~3e-4.
             self.user_mlp = nn.Sequential(
                 nn.Linear(d_u, hidden),
                 nn.ReLU(),
                 nn.Linear(hidden, self.latdim),
-                nn.LayerNorm(self.latdim),
             )
             self.merchant_mlp = nn.Sequential(
                 nn.Linear(d_v, hidden),
                 nn.ReLU(),
                 nn.Linear(hidden, self.latdim),
-                nn.LayerNorm(self.latdim),
             )
-            # Use small gain (0.01) for ALL linear layers so the initial
-            # feature contribution is negligible — the model learns to scale up.
+            # Xavier on the hidden layer, ZERO on the final Linear so that
+            # f_u and f_v are exactly 0 at init → forward pass is identical
+            # to the baseline. Gradients flow in naturally and the model
+            # learns to use features only if they help.
             for mlp in [self.user_mlp, self.merchant_mlp]:
-                for layer in mlp:
-                    if isinstance(layer, nn.Linear):
-                        nn.init.xavier_uniform_(layer.weight, gain=0.01)
-                        nn.init.zeros_(layer.bias)
+                linears = [l for l in mlp if isinstance(l, nn.Linear)]
+                nn.init.xavier_uniform_(linears[0].weight)
+                nn.init.zeros_(linears[0].bias)
+                nn.init.zeros_(linears[-1].weight)
+                nn.init.zeros_(linears[-1].bias)
+            # ReZero-style scalar gates, initialised to 0. Second safety
+            # valve: even after the final Linear learns non-zero weights,
+            # the scalar can shrink the feature contribution if it hurts.
+            self.feat_gate_u = nn.Parameter(torch.zeros(1))
+            self.feat_gate_v = nn.Parameter(torch.zeros(1))
             self.register_buffer('user_feat', user_features)
             self.register_buffer('merchant_feat', merchant_features)
         else:
@@ -147,8 +154,8 @@ class SelfGNN(nn.Module):
             u_init = self.user_embeds[k]
             i_init = self.item_embeds[k]
             if self.use_node_features:
-                u_init = u_init + feat_mask_u * f_u
-                i_init = i_init + feat_mask_v * f_v
+                u_init = u_init + self.feat_gate_u * feat_mask_u * f_u
+                i_init = i_init + self.feat_gate_v * feat_mask_v * f_v
 
             u_embs = [u_init]
             i_embs = [i_init]

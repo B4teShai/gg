@@ -7,6 +7,8 @@ import pandas as pd
 import os
 import torch
 
+torch.sparse.check_sparse_tensor_invariants.disable()
+
 
 def build_sparse_adj(rows, cols, vals, shape):
     """Build PyTorch sparse tensor from COO arrays."""
@@ -46,6 +48,10 @@ def build_weighted_adj(mat, edge_weights_arr, shape):
     if sp.issparse(edge_weights_arr):
         # Fast path: edge_weights_arr is a CSR matrix with rating values
         raw = np.asarray(edge_weights_arr[rows, cols]).flatten()
+        matched = int((raw > 0).sum())
+        total = len(raw)
+        coverage = 100.0 * matched / max(total, 1)
+        print(f'  edge-weight coverage: {matched:,}/{total:,} ({coverage:.2f}%)')
         raw = np.where(raw > 0, raw, 1.0)
     else:
         # Fallback: dict lookup (slow, only for small matrices)
@@ -56,10 +62,11 @@ def build_weighted_adj(mat, edge_weights_arr, shape):
             if key in edge_weights:
                 raw[idx] = edge_weights[key]
 
-    # Linear scale: maps ratings 1-5 to [0.2, 1.0] for full discriminative range.
-    # Then apply symmetric normalization using weighted degrees so aggregation
-    # stays consistent with the binary adjacency baseline.
-    w_hat = (raw - 1.0) / 4.0 * 0.8 + 0.2   # 1→0.2, 5→1.0
+    # Paper formula (section III-C.1): w_hat = sigmoid(log(1 + w))
+    # Maps raw rating 1 -> 0.667, 5 -> 0.857. Narrow range but matches the
+    # published formulation exactly, and symmetric normalisation largely
+    # cancels a uniform multiplicative scale anyway.
+    w_hat = 1.0 / (1.0 + np.exp(-np.log1p(raw)))
 
     row_deg = np.bincount(rows, weights=w_hat,
                           minlength=shape[0]).astype(np.float64) + 1e-8
