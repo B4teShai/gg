@@ -70,16 +70,16 @@ fi
 # ------------------------------------------------------------------ #
 # Step 3: Train C1 — baseline (binary adjacency, no features)         #
 # ------------------------------------------------------------------ #
-echo ""
-echo "=== [3/5] Training C1 (baseline) ==="
-mkdir -p "$ROOT/Results"
-cd "$ROOT/selfGNN-Base"
-$PYTHON train.py \
-    --data yelp-merchant \
-    --save_path yelp_merchant_baseline \
-    --epoch "$EPOCH" --tstEpoch 3 --patience 20 \
-    --device "$DEVICE" \
-    2>&1 | tee "$ROOT/Results/c1_baseline.log"
+#echo ""
+#echo "=== [3/5] Training C1 (baseline) ==="
+#mkdir -p "$ROOT/Results"
+#cd "$ROOT/selfGNN-Base"
+#$PYTHON train.py \
+#    --data yelp-merchant \
+#    --save_path yelp_merchant_baseline \
+#    --epoch "$EPOCH" --tstEpoch 3 --patience 20 \
+#   --device "$DEVICE" \
+#   2>&1 | tee "$ROOT/Results/c1_baseline.log"
 
 # ------------------------------------------------------------------ #
 # Step 4: Train C2 / C3 / C4                                          #
