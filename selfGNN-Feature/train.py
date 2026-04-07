@@ -223,6 +223,8 @@ def main():
                     'epoch': ep, 'loss': loss,
                     'val_HR10': val_results.get('HR@10', 0),
                     'val_NDCG10': val_results.get('NDCG@10', 0),
+                    'val_HR20': val_results.get('HR@20', 0),
+                    'val_NDCG20': val_results.get('NDCG@20', 0),
                 })
 
                 if patience_counter >= args.patience:
@@ -242,6 +244,8 @@ def main():
                     'epoch': ep, 'loss': loss,
                     'val_HR10': test_results.get('HR@10', 0),
                     'val_NDCG10': test_results.get('NDCG@10', 0),
+                    'val_HR20': test_results.get('HR@20', 0),
+                    'val_NDCG20': test_results.get('NDCG@20', 0),
                 })
         print()
 

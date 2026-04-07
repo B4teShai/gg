@@ -37,6 +37,9 @@ def parse_args():
                         help='use user/merchant features via MLP projection')
     parser.add_argument('--node_mlp_hidden', type=int, default=64,
                         help='hidden dimension of feature projection MLP')
+    parser.add_argument('--keep_duplicate_star', action='store_true', default=False,
+                        help='Do NOT zero out duplicate star columns when both '
+                             'edge and node features are enabled (T4-dup variant)')
     return parser.parse_args()
 
 args = parse_args()

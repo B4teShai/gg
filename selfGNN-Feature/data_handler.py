@@ -211,18 +211,14 @@ class DataHandler:
                 print(f'User features: {self.user_features.shape}, '
                       f'Merchant features: {self.merchant_features.shape}')
 
-                # When edge features are ALSO enabled, star ratings are already
-                # injected into the adjacency (log-sigmoid of rating). Keeping
-                # avg_stars in user features and stars in merchant features
-                # double-encodes the same signal through three redundant paths,
-                # which hurts C4 (both) test performance and inflates the
-                # val/test overfitting gap. Zero those columns so each feature
-                # source carries distinct information.
-                if args.use_edge_features:
+                if args.use_edge_features and not args.keep_duplicate_star:
                     self.user_features[:, 1] = 0.0      # avg_stars
                     self.merchant_features[:, 0] = 0.0  # stars
-                    print('  [C4] Zeroed star columns (u[:,1], m[:,0]) '
-                          'to remove edge-feature redundancy')
+                    print('  [T4-nodup] Zeroed star columns (u[:,1], m[:,0]) — '
+                          'duplication with edge weights removed')
+                elif args.use_edge_features and args.keep_duplicate_star:
+                    print('  [T4-dup] Star columns kept in node features — '
+                          'duplicated with edge weights')
             else:
                 print('WARNING: feature files not found, disabling node features')
                 args.use_node_features = False
