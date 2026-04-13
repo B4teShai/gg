@@ -51,6 +51,6 @@ logs/
 
 *.pt
 Datasets/yelp-merchant
-Datasets/yelp_dataset
+# Datasets/yelp_dataset
 Datasets/yelp
 *.pkl
