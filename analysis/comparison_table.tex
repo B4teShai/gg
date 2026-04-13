@@ -1,0 +1,43 @@
+\begin{table*}[t]
+\centering
+\caption{Dataset comparison for SelfGNN merchant recommendation.
+         Graph metrics on 500K-edge samples; $k$-core at $k=5$.
+         All datasets share a uniform 4-D user + 4-D merchant feature schema.}
+\label{tab:dataset_comparison}
+\begin{tabular}{l r r r}
+\toprule
+\textbf{Property} & \textbf{Yelp} & \textbf{Finance} & \textbf{Synthetic} \\
+\midrule
+\multicolumn{4}{l}{\textit{Dataset Statistics}} \\[2pt]
+Users $|\mathcal{U}|$ & 1,987,897 & 2,000 & 100,000 \\
+Merchants $|\mathcal{M}|$ & 150,346 & 74,831 & 48 \\
+Interactions $|\mathcal{E}|$ & 6,990,280 & 13,305,915 & 5,000,000 \\
+User-user social edges & 52,612,737 & --- & --- \\
+Temporal range & 2005-03-01--2022-01-19 & 2010-01-01--2019-10-31 & 2023-01-01--2024-12-30 \\
+Interaction signal & Stars (1--5) & Amount (USD) & Amount (units) \\
+Edge weight & stars$/5$ & $\sigma(\log(1{+}|\$|)/p_{75})$ & $\sigma(\log(1{+}a)/p_{75})$ \\
+\midrule
+\multicolumn{4}{l}{\textit{Graph Properties after $k$-core ($k=5$)}} \\[2pt]
+$|\mathcal{U}|_k$ full dataset & 268,653 & --- & --- \\
+$|\mathcal{M}|_k$ full dataset & 109,325 & --- & --- \\
+$|\mathcal{U}|_k$ (500K sample) & 67,108 & 1,112 & 77,116 \\
+$|\mathcal{M}|_k$ (500K sample) & 9,449 & 18,695 & 49 \\
+$|\mathcal{E}|_k$ (500K sample) & 81,995 & 67,386 & 175,303 \\
+Density & 0.000129 & 0.003241 & 0.046393 \\
+Sparsity & 0.9999 & 0.9968 & 0.9536 \\
+Avg.\ user degree & 1.2 & 60.6 & 2.3 \\
+Avg.\ merchant degree & 8.7 & 3.6 & 3577.6 \\
+Connected components & 3,752 & 1 & 1 \\
+Largest CC (\% nodes) & 83.79\% & 100.00\% & 100.00\% \\
+Temporal slices $T$ & 5 & 10 & 23 \\
+\midrule
+\multicolumn{4}{l}{\textit{Uniform Feature Schema ($d_u{=}4$, $d_m{=}4$, $d_e{=}1$)}} \\[2pt]
+$f_u^{(1)}$ interaction count (mean) & 1.2 & 429.1 & 4.7 \\
+$f_u^{(2)}$ avg.\ interaction value (mean) & 0.768 & 0.684 & 0.710 \\
+$f_u^{(4)}$ activity span (mean days) & 64.2 & 140.0 & 246.6 \\
+Explicit feedback & Yes (stars) & No (amount) & No (amount) \\
+Long-tail distribution & Yes & Yes & \textbf{No} \\
+Social graph available & Yes & No & No \\
+\bottomrule
+\end{tabular}
+\end{table*}

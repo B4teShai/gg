@@ -1,0 +1,412 @@
+{
+  "yelp": {
+    "dataset": "yelp",
+    "before_kcore": {
+      "n_users": 318303,
+      "n_merchants": 14768,
+      "n_edges": 486663,
+      "density": 0.000103529928345733,
+      "sparsity": 0.9998964700716543,
+      "avg_user_degree": 1.528929981809785,
+      "max_user_degree": 188.0,
+      "avg_merchant_degree": 32.953886782231855,
+      "max_merchant_degree": 3780.0,
+      "n_components": 1211,
+      "largest_cc_size": 327936,
+      "largest_cc_frac": 0.9845828667161056,
+      "note": "500K sample, before k-core"
+    },
+    "after_kcore": {
+      "n_users": 67108,
+      "n_merchants": 9449,
+      "n_edges": 81995,
+      "density": 0.00012930854511048804,
+      "sparsity": 0.9998706914548895,
+      "avg_user_degree": 1.2218364427490016,
+      "max_user_degree": 49.0,
+      "avg_merchant_degree": 8.677637845274631,
+      "max_merchant_degree": 800.0,
+      "n_components": 3752,
+      "largest_cc_size": 64150,
+      "largest_cc_frac": 0.8379377457319382,
+      "note": "500K sample, k-core k=5"
+    },
+    "ground_truth_kcore": {
+      "n_users": 268653,
+      "n_merchants": 109325,
+      "source": "preprocess_bipartite_graph.ipynb (full dataset, k-core k=5)"
+    },
+    "uniform_features": {
+      "n_users": 67108,
+      "n_merchants": 9449,
+      "user_features": {
+        "names": [
+          "interaction_count",
+          "avg_interaction_value",
+          "unique_merchant_count",
+          "activity_span_days"
+        ],
+        "dim": 4,
+        "stats": {
+          "interaction_count": {
+            "mean": 1.2301215950408297,
+            "std": 0.8534440201864141,
+            "min": 1.0,
+            "max": 52.0
+          },
+          "avg_interaction_value": {
+            "mean": 0.7683696035296604,
+            "std": 0.2727310551801164,
+            "min": 0.2,
+            "max": 1.0
+          },
+          "unique_merchant_count": {
+            "mean": 1.2218364427490016,
+            "std": 0.8304291528398595,
+            "min": 1.0,
+            "max": 49.0
+          },
+          "activity_span_days": {
+            "mean": 64.19152709065983,
+            "std": 273.09505919433155,
+            "min": 0.0,
+            "max": 4346.0
+          }
+        }
+      },
+      "merchant_features": {
+        "names": [
+          "interaction_count",
+          "avg_interaction_value",
+          "unique_user_count",
+          "category_id"
+        ],
+        "dim": 4,
+        "stats": {
+          "interaction_count": {
+            "mean": 8.736480050799026,
+            "std": 20.976025188154534,
+            "min": 1.0,
+            "max": 804.0
+          },
+          "avg_interaction_value": {
+            "mean": 0.7441296455964114,
+            "std": 0.23859509160872805,
+            "min": 0.2,
+            "max": 1.0
+          },
+          "unique_user_count": {
+            "mean": 8.677637845274631,
+            "std": 20.85867580966294,
+            "min": 1.0,
+            "max": 800.0
+          },
+          "category_id": {
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          }
+        }
+      },
+      "edge_features": {
+        "names": [
+          "normalized_interaction_value"
+        ],
+        "dim": 1,
+        "stats": {
+          "mean": 0.7687199428232244,
+          "std": 0.2707907372205389,
+          "min": 0.2,
+          "max": 1.0
+        }
+      }
+    },
+    "edge_weight_formula": "stars / 5.0  \u2192  [0.2, 1.0]",
+    "temporal_slices": 5,
+    "temporal_note": "2005-2022, supports 5 equal time slices for SelfGNN",
+    "recommendation_suitability": {
+      "explicit_feedback": true,
+      "long_tail_structure": true,
+      "social_graph": true,
+      "note": "Best for heterogeneous recommendation; explicit star ratings give clean supervision signal."
+    }
+  },
+  "finance": {
+    "dataset": "finance",
+    "before_kcore": {
+      "n_users": 1112,
+      "n_merchants": 19040,
+      "n_edges": 68856,
+      "density": 0.003252146182213893,
+      "sparsity": 0.9967478538177861,
+      "avg_user_degree": 61.92086330935252,
+      "max_user_degree": 133.0,
+      "avg_merchant_degree": 3.6163865546218488,
+      "max_merchant_degree": 1104.0,
+      "n_components": 1,
+      "largest_cc_size": 20152,
+      "largest_cc_frac": 1.0,
+      "note": "500K sample, before k-core"
+    },
+    "after_kcore": {
+      "n_users": 1112,
+      "n_merchants": 18695,
+      "n_edges": 67386,
+      "density": 0.0032414507014340388,
+      "sparsity": 0.996758549298566,
+      "avg_user_degree": 60.59892086330935,
+      "max_user_degree": 132.0,
+      "avg_merchant_degree": 3.604493179994651,
+      "max_merchant_degree": 1101.0,
+      "n_components": 1,
+      "largest_cc_size": 19807,
+      "largest_cc_frac": 1.0,
+      "note": "500K sample, k-core k=5"
+    },
+    "uniform_features": {
+      "n_users": 1112,
+      "n_merchants": 18695,
+      "user_features": {
+        "names": [
+          "interaction_count",
+          "avg_interaction_value",
+          "unique_merchant_count",
+          "activity_span_days"
+        ],
+        "dim": 4,
+        "stats": {
+          "interaction_count": {
+            "mean": 429.125,
+            "std": 220.6792604521436,
+            "min": 1.0,
+            "max": 1942.0
+          },
+          "avg_interaction_value": {
+            "mean": 0.6841770043026851,
+            "std": 0.026220379097126368,
+            "min": 0.5657994819106125,
+            "max": 0.8302400105778046
+          },
+          "unique_merchant_count": {
+            "mean": 60.59892086330935,
+            "std": 15.12118667979627,
+            "min": 1.0,
+            "max": 132.0
+          },
+          "activity_span_days": {
+            "mean": 139.95053956834533,
+            "std": 14.549168672518164,
+            "min": 0.0,
+            "max": 143.0
+          }
+        }
+      },
+      "merchant_features": {
+        "names": [
+          "interaction_count",
+          "avg_interaction_value",
+          "unique_user_count",
+          "category_id"
+        ],
+        "dim": 4,
+        "stats": {
+          "interaction_count": {
+            "mean": 25.52484621556566,
+            "std": 395.58790887214633,
+            "min": 1.0,
+            "max": 22481.0
+          },
+          "avg_interaction_value": {
+            "mean": 0.6962025516199852,
+            "std": 0.05427157738480248,
+            "min": 0.5055444749108903,
+            "max": 0.8658227851392873
+          },
+          "unique_user_count": {
+            "mean": 3.604493179994651,
+            "std": 29.615759542787732,
+            "min": 1.0,
+            "max": 1101.0
+          },
+          "category_id": {
+            "mean": 71.4872960684675,
+            "std": 19.523898211702445,
+            "min": 0.0,
+            "max": 108.0
+          }
+        }
+      },
+      "edge_features": {
+        "names": [
+          "normalized_interaction_value"
+        ],
+        "dim": 1,
+        "stats": {
+          "mean": 0.6837005695379774,
+          "std": 0.06279118586656889,
+          "min": 0.5,
+          "max": 0.878788158077296
+        }
+      }
+    },
+    "edge_weight_formula": "sigmoid(log1p(|amount|) / p75)  \u2192  (0, 1)",
+    "temporal_slices": 10,
+    "temporal_note": "2010-2019, ~10 annual time slices for SelfGNN",
+    "recommendation_suitability": {
+      "explicit_feedback": false,
+      "long_tail_structure": true,
+      "social_graph": false,
+      "note": "Implicit feedback (spending as preference proxy). Long-tail merchant distribution makes this realistic for recommendation."
+    }
+  },
+  "synthetic": {
+    "dataset": "synthetic",
+    "before_kcore": {
+      "n_users": 85169,
+      "n_merchants": 49,
+      "n_edges": 221923,
+      "density": 0.05317710453717351,
+      "sparsity": 0.9468228954628265,
+      "avg_user_degree": 2.605678122321502,
+      "max_user_degree": 49.0,
+      "avg_merchant_degree": 4529.040816326531,
+      "max_merchant_degree": 71641.0,
+      "n_components": 1,
+      "largest_cc_size": 85218,
+      "largest_cc_frac": 1.0,
+      "note": "500K sample, before k-core"
+    },
+    "after_kcore": {
+      "n_users": 77116,
+      "n_merchants": 49,
+      "n_edges": 175303,
+      "density": 0.046392606526504995,
+      "sparsity": 0.953607393473495,
+      "avg_user_degree": 2.2732377197987446,
+      "max_user_degree": 49.0,
+      "avg_merchant_degree": 3577.612244897959,
+      "max_merchant_degree": 62204.0,
+      "n_components": 1,
+      "largest_cc_size": 77165,
+      "largest_cc_frac": 1.0,
+      "note": "500K sample, k-core k=5",
+      "density_warning": "Near-dense graph (0.0464) due to only 49 merchants. Graph structure contributes less signal than Yelp/Finance for GNN evaluation."
+    },
+    "uniform_features": {
+      "n_users": 77116,
+      "n_merchants": 49,
+      "user_features": {
+        "names": [
+          "interaction_count",
+          "avg_interaction_value",
+          "unique_merchant_count",
+          "activity_span_days"
+        ],
+        "dim": 4,
+        "stats": {
+          "interaction_count": {
+            "mean": 4.726010166502412,
+            "std": 43.06804771064761,
+            "min": 1.0,
+            "max": 7922.0
+          },
+          "avg_interaction_value": {
+            "mean": 0.7098453262827302,
+            "std": 0.023059292308278766,
+            "min": 0.6219622139353684,
+            "max": 0.8007960653173634
+          },
+          "unique_merchant_count": {
+            "mean": 2.2732377197987446,
+            "std": 2.94457860852443,
+            "min": 1.0,
+            "max": 49.0
+          },
+          "activity_span_days": {
+            "mean": 246.58585766896624,
+            "std": 245.7503491793967,
+            "min": 0.0,
+            "max": 729.0
+          }
+        }
+      },
+      "merchant_features": {
+        "names": [
+          "interaction_count",
+          "avg_interaction_value",
+          "unique_user_count",
+          "category_id"
+        ],
+        "dim": 4,
+        "stats": {
+          "interaction_count": {
+            "mean": 7437.775510204082,
+            "std": 30564.163270388934,
+            "min": 1384.0,
+            "max": 218860.0
+          },
+          "avg_interaction_value": {
+            "mean": 0.7098054287083266,
+            "std": 0.0006467295793909687,
+            "min": 0.7084099100418746,
+            "max": 0.7116401548412635
+          },
+          "unique_user_count": {
+            "mean": 3577.612244897959,
+            "std": 8543.572833891763,
+            "min": 1173.0,
+            "max": 62204.0
+          },
+          "category_id": {
+            "mean": 6.081632653061225,
+            "std": 3.999166926992944,
+            "min": -1.0,
+            "max": 13.0
+          }
+        }
+      },
+      "edge_features": {
+        "names": [
+          "normalized_interaction_value"
+        ],
+        "dim": 1,
+        "stats": {
+          "mean": 0.7098238908187239,
+          "std": 0.03059697622809141,
+          "min": 0.6219622139353684,
+          "max": 0.8007960653173634
+        }
+      }
+    },
+    "edge_weight_formula": "sigmoid(log1p(amount) / p75)  \u2192  (0, 1)",
+    "temporal_slices": 23,
+    "temporal_note": "2023-2024, ~23 monthly time slices",
+    "recommendation_suitability": {
+      "explicit_feedback": false,
+      "long_tail_structure": false,
+      "social_graph": false,
+      "note": "Only 49 merchants creates near-complete bipartite graph. Useful for controlled experiments and scalability tests. Not representative of real-world recommendation sparsity."
+    }
+  },
+  "uniform_feature_schema": {
+    "user_features": [
+      "interaction_count",
+      "avg_interaction_value",
+      "unique_merchant_count",
+      "activity_span_days"
+    ],
+    "merchant_features": [
+      "interaction_count",
+      "avg_interaction_value",
+      "unique_user_count",
+      "category_id"
+    ],
+    "edge_features": [
+      "normalized_interaction_value"
+    ],
+    "user_dim": 4,
+    "merchant_dim": 4,
+    "edge_dim": 1
+  }
+}

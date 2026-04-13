@@ -12,12 +12,15 @@ def parse_args():
     parser.add_argument('--latdim', default=64, type=int, help='embedding dimension')
     parser.add_argument('--ssldim', default=32, type=int, help='SAL weight MLP hidden dim')
     parser.add_argument('--sampNum', default=40, type=int, help='negative samples per user in train')
-    parser.add_argument('--testSize', default=1000, type=int, help='neg + 1 pos for evaluation')
+    parser.add_argument('--testSize', default=1000, type=int,
+                        help='eval set size (neg+1 pos). Clamped to n_merchants automatically.')
     parser.add_argument('--sslNum', default=40, type=int, help='SSL sample size')
     parser.add_argument('--num_attention_heads', default=16, type=int)
     parser.add_argument('--gnn_layer', default=3, type=int)
     parser.add_argument('--trnNum', default=10000, type=int, help='users sampled per epoch')
-    parser.add_argument('--data', default='yelp-merchant', type=str)
+    parser.add_argument('--data', default='yelp-merchant', type=str,
+                        help='dataset name under Datasets/ dir '
+                             '(yelp-merchant | finance-merchant | synthetic-merchant)')
     parser.add_argument('--keepRate', default=0.5, type=float, help='edge keep rate (1 - dropout)')
     parser.add_argument('--pos_length', default=200, type=int, help='max sequence length')
     parser.add_argument('--att_layer', default=2, type=int, help='sequence self-attention layers')
@@ -32,14 +35,15 @@ def parse_args():
                         help='early stopping patience (counted in evaluation epochs)')
     # Feature flags
     parser.add_argument('--use_edge_features', action='store_true', default=False,
-                        help='use edge weights (star ratings) in adjacency')
+                        help='use normalized interaction value as edge weight in adjacency')
     parser.add_argument('--use_node_features', action='store_true', default=False,
-                        help='use user/merchant features via MLP projection')
+                        help='use user/merchant node features via MLP projection')
     parser.add_argument('--node_mlp_hidden', type=int, default=64,
                         help='hidden dimension of feature projection MLP')
-    parser.add_argument('--keep_duplicate_star', action='store_true', default=False,
-                        help='Do NOT zero out duplicate star columns when both '
-                             'edge and node features are enabled (T4-dup variant)')
+    parser.add_argument('--keep_duplicate_value', action='store_true', default=False,
+                        help='keep avg_interaction_value in node features even when '
+                             'edge features are enabled (ablation: T4-dup variant). '
+                             'Default: False (zeros the value column to avoid redundancy).')
     return parser.parse_args()
 
 args = parse_args()

@@ -1,0 +1,165 @@
+{
+  "yelp": {
+    "dataset": "yelp",
+    "graph_type": "user-business bipartite (recommendation)",
+    "n_users": 1987897,
+    "n_merchants": 150346,
+    "n_interactions": 6990280,
+    "n_social_edges": 52612737,
+    "tips_available": 908915,
+    "temporal_range": {
+      "min": "2005-03-01",
+      "max": "2022-01-19"
+    },
+    "interaction_value_stats": {
+      "raw_mean": 3.806634,
+      "raw_std": 1.4182607623578958,
+      "raw_min": 1.0,
+      "raw_max": 5.0,
+      "norm_mean": 0.7613268000000001,
+      "norm_std": 0.28365215247157916,
+      "norm_scale": "stars / 5.0",
+      "distribution": {
+        "1": 65233,
+        "2": 38856,
+        "3": 52589,
+        "4": 114005,
+        "5": 229317
+      }
+    },
+    "interaction_value_meaning": "star rating (1-5)",
+    "missing_rates": {
+      "review_id": 0.0,
+      "user_id": 0.0,
+      "business_id": 0.0,
+      "stars": 0.0,
+      "date": 0.0
+    },
+    "uniform_edge_weight": "stars / 5.0  \u2192  [0.2, 1.0]",
+    "sample_size": 500000
+  },
+  "finance": {
+    "dataset": "finance",
+    "graph_type": "user-merchant bipartite (spending/recommendation)",
+    "n_users": 2000,
+    "n_merchants": 74831,
+    "n_interactions": 13305915,
+    "n_cards": 6146,
+    "temporal_range": {
+      "min": "2010-01-01",
+      "max": "2019-10-31"
+    },
+    "interaction_value_stats": {
+      "raw_mean": 42.97603902324643,
+      "raw_std": 81.65574458535802,
+      "raw_min": -500.0,
+      "raw_max": 6820.2,
+      "pct_negative": 0.049605682886144996,
+      "norm_mean": 0.5118008659684696,
+      "norm_std": 0.004354282552967955,
+      "norm_scale": "sigmoid(log1p(|amount|) / p75)"
+    },
+    "interaction_value_meaning": "transaction amount (USD)",
+    "missing_rates": {
+      "users": {
+        "id": 0.0,
+        "current_age": 0.0,
+        "retirement_age": 0.0,
+        "birth_year": 0.0,
+        "birth_month": 0.0,
+        "gender": 0.0,
+        "address": 0.0,
+        "latitude": 0.0,
+        "longitude": 0.0,
+        "per_capita_income": 0.0,
+        "yearly_income": 0.0,
+        "total_debt": 0.0,
+        "credit_score": 0.0,
+        "num_credit_cards": 0.0
+      },
+      "cards": {
+        "id": 0.0,
+        "client_id": 0.0,
+        "card_brand": 0.0,
+        "card_type": 0.0,
+        "card_number": 0.0,
+        "expires": 0.0,
+        "cvv": 0.0,
+        "has_chip": 0.0,
+        "num_cards_issued": 0.0,
+        "credit_limit": 0.0,
+        "acct_open_date": 0.0,
+        "year_pin_last_changed": 0.0,
+        "card_on_dark_web": 0.0
+      },
+      "transactions": {
+        "id": 0.0,
+        "date": 0.0,
+        "client_id": 0.0,
+        "card_id": 0.0,
+        "amount": 0.0,
+        "use_chip": 0.0,
+        "merchant_id": 0.0,
+        "merchant_city": 0.0,
+        "merchant_state": 0.1175,
+        "zip": 0.1242,
+        "mcc": 0.0,
+        "errors": 0.9841
+      }
+    },
+    "uniform_edge_weight": "sigmoid(log1p(|amount|) / p75)  \u2192  (0, 1)"
+  },
+  "synthetic": {
+    "dataset": "synthetic",
+    "graph_type": "user(customer)-merchant bipartite (synthetic recommendation)",
+    "n_users": 100000,
+    "n_merchants": 48,
+    "n_interactions": 5000000,
+    "temporal_range": {
+      "min": "2023-01-01",
+      "max": "2024-12-30"
+    },
+    "interaction_value_stats": {
+      "raw_mean": 246739.1426,
+      "raw_std": 865972.430735312,
+      "raw_min": 400.0,
+      "raw_max": 18800000.0,
+      "norm_mean": 0.5000159961663795,
+      "norm_std": 2.649447134343077e-6,
+      "norm_scale": "sigmoid(log1p(amount) / p75)"
+    },
+    "interaction_value_meaning": "transaction amount (monetary units)",
+    "missing_rates": {
+      "transaction_id": 0.0,
+      "account_id": 0.0,
+      "customer_id": 0.0,
+      "timestamp": 0.0,
+      "amount_mnt": 0.0,
+      "balance_before_mnt": 0.0,
+      "balance_after_mnt": 0.0,
+      "transaction_type": 0.0,
+      "channel": 0.0,
+      "merchant_category_code": 0.5996,
+      "merchant_name": 0.5996,
+      "device_id": 0.5501
+    },
+    "uniform_edge_weight": "sigmoid(log1p(amount) / p75)  \u2192  (0, 1)",
+    "density_note": "Only 48 unique merchants \u2192 near-complete bipartite graph"
+  },
+  "uniform_feature_schema": {
+    "user_features": [
+      "interaction_count",
+      "avg_interaction_value",
+      "unique_merchant_count",
+      "activity_span_days"
+    ],
+    "merchant_features": [
+      "interaction_count",
+      "avg_interaction_value",
+      "unique_user_count",
+      "category_id"
+    ],
+    "edge_features": ["normalized_interaction_value"],
+    "note": "All 3 datasets use identical 4D user + 4D merchant feature schema. Edge weights normalized to (0,1) via dataset-specific mapping. Enables direct model comparison across datasets."
+  }
+}
