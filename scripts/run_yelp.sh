@@ -3,7 +3,6 @@
 #
 # Usage:
 #   bash run_yelp.sh [--device cuda|mps|cpu] [--epoch N] [--seed N]
-#
 
 set -euo pipefail
 
@@ -12,7 +11,6 @@ DEVICE="cuda"
 EPOCH=150
 SEED=100
 
-# Parse optional overrides
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --device) DEVICE="$2"; shift 2 ;;
@@ -23,7 +21,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RESULTS_DIR="$SCRIPT_DIR/Results"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+RESULTS_DIR="$ROOT_DIR/Results"
 mkdir -p "$RESULTS_DIR"
 
 echo "============================================================"
@@ -33,12 +32,12 @@ echo "  Epochs  : $EPOCH"
 echo "  Seed    : $SEED"
 echo "============================================================"
 
-# ── 1. SelfGNN-Base ─────────────────────────────────────────────
+# ── 1. SelfGNN-Base (no features) ───────────────────────────────
 echo ""
-echo ">>> [1/3] selfGNN-Base on $DATASET"
+echo ">>> [1/4] selfGNN-Base on $DATASET"
 echo "------------------------------------------------------------"
 (
-  cd "$SCRIPT_DIR/selfGNN-Base"
+  cd "$ROOT_DIR/selfGNN-Base"
   python train.py \
     --data "$DATASET" \
     --device "$DEVICE" \
@@ -46,14 +45,30 @@ echo "------------------------------------------------------------"
     --seed "$SEED" \
     --save_path "yelp_merchant_base"
 )
-echo "---- selfGNN-Base done. Result: $RESULTS_DIR/yelp_merchant_base.json"
+echo "---- done → $RESULTS_DIR/yelp_merchant_base.json"
 
-# ── 2. SelfGNN-Feature  (edge features only) ────────────────────
+# ── 2. SelfGNN-Feature (node features only) ─────────────────────
 echo ""
-echo ">>> [2/3] selfGNN-Feature (edge features) on $DATASET"
+echo ">>> [2/4] selfGNN-Feature (node only) on $DATASET"
 echo "------------------------------------------------------------"
 (
-  cd "$SCRIPT_DIR/selfGNN-Feature"
+  cd "$ROOT_DIR/selfGNN-Feature"
+  python train.py \
+    --data "$DATASET" \
+    --device "$DEVICE" \
+    --epoch "$EPOCH" \
+    --seed "$SEED" \
+    --use_node_features \
+    --save_path "yelp_merchant_node"
+)
+echo "---- done → $RESULTS_DIR/yelp_merchant_node.json"
+
+# ── 3. SelfGNN-Feature (edge features only) ─────────────────────
+echo ""
+echo ">>> [3/4] selfGNN-Feature (edge only) on $DATASET"
+echo "------------------------------------------------------------"
+(
+  cd "$ROOT_DIR/selfGNN-Feature"
   python train.py \
     --data "$DATASET" \
     --device "$DEVICE" \
@@ -62,24 +77,24 @@ echo "------------------------------------------------------------"
     --use_edge_features \
     --save_path "yelp_merchant_edge"
 )
-echo "---- selfGNN-Feature (edge) done. Result: $RESULTS_DIR/yelp_merchant_edge.json"
+echo "---- done → $RESULTS_DIR/yelp_merchant_edge.json"
 
-# ── 3. SelfGNN-Feature  (edge + node features) ──────────────────
+# ── 4. SelfGNN-Feature (node + edge features) ───────────────────
 echo ""
-echo ">>> [3/3] selfGNN-Feature (edge + node features) on $DATASET"
+echo ">>> [4/4] selfGNN-Feature (node + edge) on $DATASET"
 echo "------------------------------------------------------------"
 (
-  cd "$SCRIPT_DIR/selfGNN-Feature"
+  cd "$ROOT_DIR/selfGNN-Feature"
   python train.py \
     --data "$DATASET" \
     --device "$DEVICE" \
     --epoch "$EPOCH" \
     --seed "$SEED" \
-    --use_edge_features \
     --use_node_features \
-    --save_path "yelp_merchant_full"
+    --use_edge_features \
+    --save_path "yelp_merchant_node_edge"
 )
-echo "---- selfGNN-Feature (full) done. Result: $RESULTS_DIR/yelp_merchant_full.json"
+echo "---- done → $RESULTS_DIR/yelp_merchant_node_edge.json"
 
 # ── Summary ─────────────────────────────────────────────────────
 echo ""
@@ -87,7 +102,7 @@ echo "============================================================"
 echo "  RESULTS SUMMARY  —  $DATASET"
 echo "============================================================"
 
-for TAG in yelp_merchant_base yelp_merchant_edge yelp_merchant_full; do
+for TAG in yelp_merchant_base yelp_merchant_node yelp_merchant_edge yelp_merchant_node_edge; do
   F="$RESULTS_DIR/$TAG.json"
   if [ -f "$F" ]; then
     echo ""
