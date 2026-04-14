@@ -115,9 +115,10 @@ class SelfGNN(nn.Module):
                     if isinstance(layer, nn.Linear):
                         nn.init.xavier_uniform_(layer.weight)
                         nn.init.zeros_(layer.bias)
-            # Small positive init so gradient flows from the first step.
-            self.feat_gate_u = nn.Parameter(torch.full((1,), 0.01))
-            self.feat_gate_v = nn.Parameter(torch.full((1,), 0.01))
+            # Init to 1.0: features are fully active from step 0.
+            # 0.01 was too small — gate never opened before base embeddings converged.
+            self.feat_gate_u = nn.Parameter(torch.full((1,), 1.0))
+            self.feat_gate_v = nn.Parameter(torch.full((1,), 1.0))
             self.register_buffer('user_feat', user_features)
             self.register_buffer('merchant_feat', merchant_features)
         else:

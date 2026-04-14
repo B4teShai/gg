@@ -9,7 +9,7 @@ set -euo pipefail
 DATASET="finance-merchant"
 DEVICE="cuda"
 EPOCH=150
-SEEDS=(42 100 123)
+SEEDS=(42)
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -65,15 +65,6 @@ for m, vals in metrics.items():
 EOF
 }
 
-# ── 0. Extract improved 8+8 node features ───────────────────────
-echo ""
-echo ">>> [0/4] Extracting improved features for $DATASET"
-echo "------------------------------------------------------------"
-(
-  cd "$ROOT_DIR"
-  python scripts/extract_features_v2.py --dataset "$DATASET"
-)
-
 # ── 1. SelfGNN-Base (no features) ───────────────────────────────
 echo ""
 echo ">>> [1/4] selfGNN-Base on $DATASET"
@@ -86,6 +77,7 @@ for SEED in "${SEEDS[@]}"; do
       --data "$DATASET" \
       --device "$DEVICE" \
       --epoch "$EPOCH" \
+      --graphNum 10 \
       --seed "$SEED" \
       --save_path "finance_merchant_base_seed${SEED}"
   )
@@ -104,6 +96,7 @@ for SEED in "${SEEDS[@]}"; do
       --device "$DEVICE" \
       --epoch "$EPOCH" \
       --seed "$SEED" \
+      --graphNum 10 \
       --use_node_features \
       --node_mlp_hidden 128 \
       --save_path "finance_merchant_node_seed${SEED}"
@@ -123,6 +116,7 @@ for SEED in "${SEEDS[@]}"; do
       --device "$DEVICE" \
       --epoch "$EPOCH" \
       --seed "$SEED" \
+      --graphNum 10 \
       --use_edge_features \
       --save_path "finance_merchant_edge_seed${SEED}"
   )
@@ -141,6 +135,7 @@ for SEED in "${SEEDS[@]}"; do
       --device "$DEVICE" \
       --epoch "$EPOCH" \
       --seed "$SEED" \
+      --graphNum 10 \
       --use_node_features \
       --use_edge_features \
       --node_mlp_hidden 128 \
