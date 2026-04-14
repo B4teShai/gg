@@ -2,12 +2,12 @@
 # run_finance.ps1 — Train all model variants on finance-merchant and print results.
 #
 # Usage:
-#   .\run_finance.ps1 [-Device cuda|mps|cpu] [-Epoch N] [-Seed N]
+#   .\run_finance.ps1 [-Device cuda|mps|cpu] [-Epoch N] [-Seeds 42,100,123]
 
 param(
-    [string]$Device = "cuda",
-    [int]$Epoch     = 150,
-    [int]$Seed      = 100
+    [string]$Device  = "cuda",
+    [int]$Epoch      = 150,
+    [int[]]$Seeds    = @(42, 100, 123)
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,35 +22,38 @@ Write-Host "============================================================"
 Write-Host "  Dataset : $Dataset"
 Write-Host "  Device  : $Device"
 Write-Host "  Epochs  : $Epoch"
-Write-Host "  Seed    : $Seed"
+Write-Host "  Seeds   : $($Seeds -join ', ')"
 Write-Host "============================================================"
 
-function Show-Result {
-    param([string]$Tag, [string]$File)
-    if (Test-Path $File) {
-        Write-Host ""
-        Write-Host "* $Tag"
-        $d    = Get-Content $File -Raw | ConvertFrom-Json
-        $best = if ($null -ne $d.best_epoch) { $d.best_epoch } else { "?" }
-        Write-Host "  Best epoch : $best"
-        if ($d.test_results) {
-            $tr   = $d.test_results
-            $hr10 = if ($null -ne $tr.'HR@10')   { "{0:F4}" -f [double]$tr.'HR@10' }   else { "0.0000" }
-            $nd10 = if ($null -ne $tr.'NDCG@10') { "{0:F4}" -f [double]$tr.'NDCG@10' } else { "0.0000" }
-            $hr20 = if ($null -ne $tr.'HR@20')   { "{0:F4}" -f [double]$tr.'HR@20' }   else { "0.0000" }
-            $nd20 = if ($null -ne $tr.'NDCG@20') { "{0:F4}" -f [double]$tr.'NDCG@20' } else { "0.0000" }
-            Write-Host "  Test  HR@10=$hr10  NDCG@10=$nd10  HR@20=$hr20  NDCG@20=$nd20"
+function Show-Results {
+    param([string]$Tag)
+    $metrics = [ordered]@{ 'HR@10'=@(); 'NDCG@10'=@(); 'HR@20'=@(); 'NDCG@20'=@() }
+    foreach ($s in $Seeds) {
+        $f = Join-Path $ResultsDir "${Tag}_seed${s}.json"
+        if (Test-Path $f) {
+            $d  = Get-Content $f -Raw | ConvertFrom-Json
+            $tr = if ($d.test_results) { $d.test_results } else { $null }
+            if ($tr) {
+                foreach ($m in $metrics.Keys) {
+                    if ($null -ne $tr.$m) { $metrics[$m] += [double]$tr.$m }
+                }
+            }
         }
-        if ($d.val_results) {
-            $vr   = $d.val_results
-            $hr10 = if ($null -ne $vr.'HR@10')   { "{0:F4}" -f [double]$vr.'HR@10' }   else { "0.0000" }
-            $nd10 = if ($null -ne $vr.'NDCG@10') { "{0:F4}" -f [double]$vr.'NDCG@10' } else { "0.0000" }
-            $hr20 = if ($null -ne $vr.'HR@20')   { "{0:F4}" -f [double]$vr.'HR@20' }   else { "0.0000" }
-            $nd20 = if ($null -ne $vr.'NDCG@20') { "{0:F4}" -f [double]$vr.'NDCG@20' } else { "0.0000" }
-            Write-Host "  Val   HR@10=$hr10  NDCG@10=$nd10  HR@20=$hr20  NDCG@20=$nd20"
+    }
+    Write-Host ""
+    Write-Host "* $Tag"
+    foreach ($m in $metrics.Keys) {
+        $vals = $metrics[$m]
+        if ($vals.Count -gt 0) {
+            $mean = ($vals | Measure-Object -Average).Average
+            $std  = if ($vals.Count -gt 1) {
+                $sq = ($vals | ForEach-Object { [Math]::Pow($_ - $mean, 2) } | Measure-Object -Sum).Sum
+                [Math]::Sqrt($sq / ($vals.Count - 1))
+            } else { 0.0 }
+            Write-Host ("  {0,-10} {1:F4} +/- {2:F4}  (n={3})" -f $m, $mean, $std, $vals.Count)
+        } else {
+            Write-Host "  ${m}: no results found"
         }
-    } else {
-        Write-Host "  ${Tag}: result file not found ($File)"
     }
 }
 
@@ -58,70 +61,78 @@ function Show-Result {
 Write-Host ""
 Write-Host ">>> [1/4] selfGNN-Base on $Dataset"
 Write-Host "------------------------------------------------------------"
-Push-Location (Join-Path $RootDir "selfGNN-Base")
-try {
-    python train.py `
-        --data      $Dataset `
-        --device    $Device  `
-        --epoch     $Epoch   `
-        --seed      $Seed    `
-        --save_path "finance_merchant_base"
-} finally { Pop-Location }
-Write-Host "---- done -> $ResultsDir\finance_merchant_base.json"
+foreach ($Seed in $Seeds) {
+    Write-Host "  -- seed $Seed"
+    Push-Location (Join-Path $RootDir "selfGNN-Base")
+    try {
+        python train.py `
+            --data      $Dataset `
+            --device    $Device  `
+            --epoch     $Epoch   `
+            --seed      $Seed    `
+            --save_path "finance_merchant_base_seed${Seed}"
+    } finally { Pop-Location }
+}
 
 # ── 2. SelfGNN-Feature (node features only) ─────────────────────
 Write-Host ""
 Write-Host ">>> [2/4] selfGNN-Feature (node only) on $Dataset"
 Write-Host "------------------------------------------------------------"
-Push-Location (Join-Path $RootDir "selfGNN-Feature")
-try {
-    python train.py `
-        --data      $Dataset `
-        --device    $Device  `
-        --epoch     $Epoch   `
-        --seed      $Seed    `
-        --use_node_features  `
-        --save_path "finance_merchant_node"
-} finally { Pop-Location }
-Write-Host "---- done -> $ResultsDir\finance_merchant_node.json"
+foreach ($Seed in $Seeds) {
+    Write-Host "  -- seed $Seed"
+    Push-Location (Join-Path $RootDir "selfGNN-Feature")
+    try {
+        python train.py `
+            --data      $Dataset `
+            --device    $Device  `
+            --epoch     $Epoch   `
+            --seed      $Seed    `
+            --use_node_features  `
+            --save_path "finance_merchant_node_seed${Seed}"
+    } finally { Pop-Location }
+}
 
 # ── 3. SelfGNN-Feature (edge features only) ─────────────────────
 Write-Host ""
 Write-Host ">>> [3/4] selfGNN-Feature (edge only) on $Dataset"
 Write-Host "------------------------------------------------------------"
-Push-Location (Join-Path $RootDir "selfGNN-Feature")
-try {
-    python train.py `
-        --data      $Dataset `
-        --device    $Device  `
-        --epoch     $Epoch   `
-        --seed      $Seed    `
-        --use_edge_features  `
-        --save_path "finance_merchant_edge"
-} finally { Pop-Location }
-Write-Host "---- done -> $ResultsDir\finance_merchant_edge.json"
+foreach ($Seed in $Seeds) {
+    Write-Host "  -- seed $Seed"
+    Push-Location (Join-Path $RootDir "selfGNN-Feature")
+    try {
+        python train.py `
+            --data      $Dataset `
+            --device    $Device  `
+            --epoch     $Epoch   `
+            --seed      $Seed    `
+            --use_edge_features  `
+            --save_path "finance_merchant_edge_seed${Seed}"
+    } finally { Pop-Location }
+}
 
 # ── 4. SelfGNN-Feature (node + edge features) ───────────────────
 Write-Host ""
 Write-Host ">>> [4/4] selfGNN-Feature (node + edge) on $Dataset"
 Write-Host "------------------------------------------------------------"
-Push-Location (Join-Path $RootDir "selfGNN-Feature")
-try {
-    python train.py `
-        --data      $Dataset `
-        --device    $Device  `
-        --epoch     $Epoch   `
-        --seed      $Seed    `
-        --use_node_features  `
-        --use_edge_features  `
-        --save_path "finance_merchant_node_edge"
-} finally { Pop-Location }
-Write-Host "---- done -> $ResultsDir\finance_merchant_node_edge.json"
+foreach ($Seed in $Seeds) {
+    Write-Host "  -- seed $Seed"
+    Push-Location (Join-Path $RootDir "selfGNN-Feature")
+    try {
+        python train.py `
+            --data      $Dataset `
+            --device    $Device  `
+            --epoch     $Epoch   `
+            --seed      $Seed    `
+            --use_node_features  `
+            --use_edge_features  `
+            --save_path "finance_merchant_node_edge_seed${Seed}"
+    } finally { Pop-Location }
+}
 
 # ── Summary ─────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "============================================================"
-Write-Host "  RESULTS SUMMARY  --  $Dataset"
+Write-Host "  RESULTS SUMMARY  --  $Dataset  (mean +/- std)"
 Write-Host "============================================================"
 
 foreach ($tag in @(
@@ -130,7 +141,7 @@ foreach ($tag in @(
     "finance_merchant_edge",
     "finance_merchant_node_edge"
 )) {
-    Show-Result -Tag $tag -File (Join-Path $ResultsDir "$tag.json")
+    Show-Results -Tag $tag
 }
 
 Write-Host ""
