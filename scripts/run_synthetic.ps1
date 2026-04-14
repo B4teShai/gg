@@ -58,31 +58,31 @@ function Show-Results {
 }
 
 # ── 0. Extract improved 8+8 node features ───────────────────────
-Write-Host ""
-Write-Host ">>> [0/4] Extracting improved features for $Dataset"
-Write-Host "------------------------------------------------------------"
-Push-Location $RootDir
-try {
-    python scripts/extract_features_v2.py --dataset $Dataset
-} finally { Pop-Location }
+# Write-Host ""
+# Write-Host ">>> [0/4] Extracting improved features for $Dataset"
+# Write-Host "------------------------------------------------------------"
+# Push-Location $RootDir
+# try {
+#     python scripts/extract_features_v2.py --dataset $Dataset
+# } finally { Pop-Location }
 
 # ── 1. SelfGNN-Base (no features) ───────────────────────────────
-Write-Host ""
-Write-Host ">>> [1/4] selfGNN-Base on $Dataset"
-Write-Host "------------------------------------------------------------"
-foreach ($Seed in $Seeds) {
-    Write-Host "  -- seed $Seed"
-    Push-Location (Join-Path $RootDir "selfGNN-Base")
-    try {
-        python train.py `
-            --data      $Dataset `
-            --device    $Device  `
-            --epoch     $Epoch   `
-            --seed      $Seed    `
-            --graphNum  12       `
-            --save_path "synthetic_merchant_base_seed${Seed}"
-    } finally { Pop-Location }
-}
+# Write-Host ""
+# Write-Host ">>> [1/4] selfGNN-Base on $Dataset"
+# Write-Host "------------------------------------------------------------"
+# foreach ($Seed in $Seeds) {
+#     Write-Host "  -- seed $Seed"
+#     Push-Location (Join-Path $RootDir "selfGNN-Base")
+#     try {
+#         python train.py `
+#             --data      $Dataset `
+#             --device    $Device  `
+#             --epoch     $Epoch   `
+#             --seed      $Seed    `
+#             --graphNum  12       `
+#             --save_path "synthetic_merchant_base_seed${Seed}"
+#     } finally { Pop-Location }
+# }
 
 # ── 2. SelfGNN-Feature (node features only) ─────────────────────
 Write-Host ""
