@@ -122,6 +122,11 @@ class DataHandler:
             args.graphNum = actual_graphs
         print(f'Sub-graphs: {args.graphNum}')
 
+        # Clamp testSize to item catalog size (prevents broken eval on small catalogs)
+        if args.testSize > args.item:
+            print(f'testSize={args.testSize} > item catalog {args.item}, clamping to {args.item}')
+            args.testSize = args.item
+
     # ------------------------------------------------------------------ #
     #  Sampling helpers                                                    #
     # ------------------------------------------------------------------ #
@@ -247,11 +252,20 @@ class DataHandler:
             pos_item = eval_int[uid]
 
             # Get pre-sampled negatives (0-indexed key)
-            neg_items = np.array(eval_dict.get(uid, [])[:args.testSize - 1])
+            # Filter out pos_item from neg list (preprocessing may include it when
+            # the test merchant was only visited once and removed from training).
+            neg_items = np.array(
+                [x for x in eval_dict.get(uid, []) if x != pos_item][:args.testSize - 1])
             if len(neg_items) < args.testSize - 1:
-                # Pad with random negatives if not enough pre-sampled
+                # Pad from existing negatives only (never from all items — that
+                # would let visited/positive items re-enter the ranking pool).
                 extra = args.testSize - 1 - len(neg_items)
-                pad = np.random.randint(0, args.item, extra)
+                if len(neg_items) > 0:
+                    pad = np.random.choice(neg_items, extra, replace=True)
+                else:
+                    available = np.array([j for j in range(args.item) if j != pos_item])
+                    pad = np.random.choice(available, extra,
+                                           replace=len(available) < extra)
                 neg_items = np.concatenate([neg_items, pad])
             loc_set = np.concatenate([neg_items, np.array([pos_item])])
             tst_locs.append(loc_set)

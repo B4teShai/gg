@@ -65,6 +65,15 @@ for m, vals in metrics.items():
 EOF
 }
 
+# ── 0. Extract improved 8+8 node features ───────────────────────
+echo ""
+echo ">>> [0/4] Extracting improved features for $DATASET"
+echo "------------------------------------------------------------"
+(
+  cd "$ROOT_DIR"
+  python scripts/extract_features_v2.py --dataset "$DATASET"
+)
+
 # ── 1. SelfGNN-Base (no features) ───────────────────────────────
 echo ""
 echo ">>> [1/4] selfGNN-Base on $DATASET"
@@ -78,6 +87,7 @@ for SEED in "${SEEDS[@]}"; do
       --device "$DEVICE" \
       --epoch "$EPOCH" \
       --seed "$SEED" \
+      --graphNum 12 \
       --save_path "synthetic_merchant_base_seed${SEED}"
   )
 done
@@ -95,7 +105,9 @@ for SEED in "${SEEDS[@]}"; do
       --device "$DEVICE" \
       --epoch "$EPOCH" \
       --seed "$SEED" \
+      --graphNum 12 \
       --use_node_features \
+      --node_mlp_hidden 128 \
       --save_path "synthetic_merchant_node_seed${SEED}"
   )
 done
@@ -113,6 +125,7 @@ for SEED in "${SEEDS[@]}"; do
       --device "$DEVICE" \
       --epoch "$EPOCH" \
       --seed "$SEED" \
+      --graphNum 12 \
       --use_edge_features \
       --save_path "synthetic_merchant_edge_seed${SEED}"
   )
@@ -131,8 +144,10 @@ for SEED in "${SEEDS[@]}"; do
       --device "$DEVICE" \
       --epoch "$EPOCH" \
       --seed "$SEED" \
+      --graphNum 12 \
       --use_node_features \
       --use_edge_features \
+      --node_mlp_hidden 128 \
       --save_path "synthetic_merchant_node_edge_seed${SEED}"
   )
 done

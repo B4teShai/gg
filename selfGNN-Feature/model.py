@@ -105,21 +105,19 @@ class SelfGNN(nn.Module):
                 nn.ReLU(),
                 nn.Linear(hidden, self.latdim),
             )
-            # Xavier on the hidden layer, ZERO on the final Linear so that
-            # f_u and f_v are exactly 0 at init → forward pass is identical
-            # to the baseline. Gradients flow in naturally and the model
-            # learns to use features only if they help.
+            # Xavier init on ALL layers so f_u / f_v are non-zero at init.
+            # The scalar gates are initialised to a tiny positive value so
+            # that gradient can flow immediately: if either the gate OR the
+            # final linear starts at 0 the other gets zero gradient and
+            # features never activate (chicken-and-egg deadlock).
             for mlp in [self.user_mlp, self.merchant_mlp]:
-                linears = [l for l in mlp if isinstance(l, nn.Linear)]
-                nn.init.xavier_uniform_(linears[0].weight)
-                nn.init.zeros_(linears[0].bias)
-                nn.init.zeros_(linears[-1].weight)
-                nn.init.zeros_(linears[-1].bias)
-            # ReZero-style scalar gates, initialised to 0. Second safety
-            # valve: even after the final Linear learns non-zero weights,
-            # the scalar can shrink the feature contribution if it hurts.
-            self.feat_gate_u = nn.Parameter(torch.zeros(1))
-            self.feat_gate_v = nn.Parameter(torch.zeros(1))
+                for layer in mlp:
+                    if isinstance(layer, nn.Linear):
+                        nn.init.xavier_uniform_(layer.weight)
+                        nn.init.zeros_(layer.bias)
+            # Small positive init so gradient flows from the first step.
+            self.feat_gate_u = nn.Parameter(torch.full((1,), 0.01))
+            self.feat_gate_v = nn.Parameter(torch.full((1,), 0.01))
             self.register_buffer('user_feat', user_features)
             self.register_buffer('merchant_feat', merchant_features)
         else:

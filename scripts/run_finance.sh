@@ -65,6 +65,15 @@ for m, vals in metrics.items():
 EOF
 }
 
+# ── 0. Extract improved 8+8 node features ───────────────────────
+echo ""
+echo ">>> [0/4] Extracting improved features for $DATASET"
+echo "------------------------------------------------------------"
+(
+  cd "$ROOT_DIR"
+  python scripts/extract_features_v2.py --dataset "$DATASET"
+)
+
 # ── 1. SelfGNN-Base (no features) ───────────────────────────────
 echo ""
 echo ">>> [1/4] selfGNN-Base on $DATASET"
@@ -96,6 +105,7 @@ for SEED in "${SEEDS[@]}"; do
       --epoch "$EPOCH" \
       --seed "$SEED" \
       --use_node_features \
+      --node_mlp_hidden 128 \
       --save_path "finance_merchant_node_seed${SEED}"
   )
 done
@@ -133,6 +143,7 @@ for SEED in "${SEEDS[@]}"; do
       --seed "$SEED" \
       --use_node_features \
       --use_edge_features \
+      --node_mlp_hidden 128 \
       --save_path "finance_merchant_node_edge_seed${SEED}"
   )
 done

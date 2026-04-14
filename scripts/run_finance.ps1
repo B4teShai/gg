@@ -57,6 +57,15 @@ function Show-Results {
     }
 }
 
+# ── 0. Extract improved 8+8 node features ───────────────────────
+Write-Host ""
+Write-Host ">>> [0/4] Extracting improved features for $Dataset"
+Write-Host "------------------------------------------------------------"
+Push-Location $RootDir
+try {
+    python scripts/extract_features_v2.py --dataset $Dataset
+} finally { Pop-Location }
+
 # ── 1. SelfGNN-Base (no features) ───────────────────────────────
 Write-Host ""
 Write-Host ">>> [1/4] selfGNN-Base on $Dataset"
@@ -88,6 +97,7 @@ foreach ($Seed in $Seeds) {
             --epoch     $Epoch   `
             --seed      $Seed    `
             --use_node_features  `
+            --node_mlp_hidden 128 `
             --save_path "finance_merchant_node_seed${Seed}"
     } finally { Pop-Location }
 }
@@ -125,6 +135,7 @@ foreach ($Seed in $Seeds) {
             --seed      $Seed    `
             --use_node_features  `
             --use_edge_features  `
+            --node_mlp_hidden 128 `
             --save_path "finance_merchant_node_edge_seed${Seed}"
     } finally { Pop-Location }
 }
