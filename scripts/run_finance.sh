@@ -66,22 +66,22 @@ EOF
 }
 
 # ── 1. SelfGNN-Base (no features) ───────────────────────────────
-echo ""
-echo ">>> [1/4] selfGNN-Base on $DATASET"
-echo "------------------------------------------------------------"
-for SEED in "${SEEDS[@]}"; do
-  echo "  -- seed $SEED"
-  (
-    cd "$ROOT_DIR/selfGNN-Base"
-    python train.py \
-      --data "$DATASET" \
-      --device "$DEVICE" \
-      --epoch "$EPOCH" \
-      --graphNum 10 \
-      --seed "$SEED" \
-      --save_path "finance_merchant_base_seed${SEED}"
-  )
-done
+# echo ""
+# echo ">>> [1/4] selfGNN-Base on $DATASET"
+# echo "------------------------------------------------------------"
+# for SEED in "${SEEDS[@]}"; do
+#   echo "  -- seed $SEED"
+#   (
+#     cd "$ROOT_DIR/selfGNN-Base"
+#     python train.py \
+#       --data "$DATASET" \
+#       --device "$DEVICE" \
+#       --epoch "$EPOCH" \
+#       --graphNum 10 \
+#       --seed "$SEED" \
+#       --save_path "finance_merchant_base_seed${SEED}"
+#   )
+# done
 
 # ── 2. SelfGNN-Feature (node features only) ─────────────────────
 echo ""

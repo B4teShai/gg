@@ -58,13 +58,13 @@ function Show-Results {
 }
 
 # ── 0. Extract improved 8+8 node features ───────────────────────
-Write-Host ""
-Write-Host ">>> [0/4] Extracting improved features for $Dataset"
-Write-Host "------------------------------------------------------------"
-Push-Location $RootDir
-try {
-    python scripts/extract_features_v2.py --dataset $Dataset
-} finally { Pop-Location }
+# Write-Host ""
+# Write-Host ">>> [0/4] Extracting improved features for $Dataset"
+# Write-Host "------------------------------------------------------------"
+# Push-Location $RootDir
+# try {
+#     python scripts/extract_features_v2.py --dataset $Dataset
+# } finally { Pop-Location }
 
 # ── 1. SelfGNN-Base (no features) ───────────────────────────────
 Write-Host ""

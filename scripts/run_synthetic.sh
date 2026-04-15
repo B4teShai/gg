@@ -65,14 +65,6 @@ for m, vals in metrics.items():
 EOF
 }
 
-# ── 0. Extract improved 8+8 node features ───────────────────────
-echo ""
-echo ">>> [0/4] Extracting improved features for $DATASET"
-echo "------------------------------------------------------------"
-(
-  cd "$ROOT_DIR"
-  python scripts/extract_features_v2.py --dataset "$DATASET"
-)
 
 # ── 1. SelfGNN-Base (no features) ───────────────────────────────
 echo ""
