@@ -54,11 +54,11 @@ def train_epoch(model, handler, optimizer, device):
 
         uids_t = torch.LongTensor(uids).to(device)
         iids_t = torch.LongTensor(iids).to(device)
-        seq_t = torch.LongTensor(sequences).to(device)
+        seq_t  = torch.LongTensor(sequences).to(device)
         mask_t = torch.FloatTensor(masks).to(device)
         uloc_t = torch.LongTensor(u_locs_seq).to(device)
-        su_t = [torch.LongTensor(s).to(device) for s in su_locs]
-        si_t = [torch.LongTensor(s).to(device) for s in si_locs]
+        su_t   = [torch.LongTensor(s).to(device) for s in su_locs]
+        si_t   = [torch.LongTensor(s).to(device) for s in si_locs]
 
         preds, ssl_loss = model(
             uids_t, iids_t, seq_t, mask_t, uloc_t,
@@ -77,7 +77,7 @@ def train_epoch(model, handler, optimizer, device):
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
         optimizer.step()
 
-        epoch_loss += loss.item()
+        epoch_loss     += loss.item()
         epoch_pre_loss += pre_loss.item()
 
         if (i + 1) % 5 == 0 or i == steps - 1:
@@ -92,23 +92,23 @@ def train_epoch(model, handler, optimizer, device):
 def evaluate(model, handler, device, mode='test'):
     model.eval()
     if mode == 'val':
-        ids = handler.valUsrs
+        ids      = handler.valUsrs
         eval_int = handler.valInt
     else:
-        ids = handler.tstUsrs
+        ids      = handler.tstUsrs
         eval_int = handler.tstInt
 
     if len(ids) == 0:
         return {}
 
-    num = len(ids)
+    num   = len(ids)
     steps = int(np.ceil(num / args.batch))
     all_preds, all_items, all_locs = [], [], []
 
     for i in range(steps):
-        st = i * args.batch
-        ed = min((i + 1) * args.batch, num)
-        bat_ids = ids[st:ed]
+        st  = i * args.batch
+        ed  = min((i + 1) * args.batch, num)
+        bat_ids    = ids[st:ed]
         batch_size = len(bat_ids)
 
         uids, iids, sequences, masks, u_locs_seq, tst_locs = \
@@ -140,29 +140,50 @@ def fmt(results):
     return ' | '.join([f'{k}={v:.4f}' for k, v in results.items()])
 
 
+def build_optimizer(model):
+    """Separate param groups: feature MLP + gate at lower lr to prevent
+    feature projections from locking in before base embeddings stabilise."""
+    if args.use_node_features and args.feat_lr_scale != 1.0:
+        feat_names  = {'user_mlp', 'merchant_mlp', 'feat_gate_u', 'feat_gate_v'}
+        base_params = [p for n, p in model.named_parameters()
+                       if not any(fn in n for fn in feat_names)]
+        feat_params = [p for n, p in model.named_parameters()
+                       if any(fn in n for fn in feat_names)]
+        return optim.Adam([
+            {'params': base_params, 'lr': args.lr},
+            {'params': feat_params, 'lr': args.lr * args.feat_lr_scale},
+        ])
+    return optim.Adam(model.parameters(), lr=args.lr)
+
+
 def main():
     set_seed(args.seed)
+
     if args.device == 'cuda' and torch.cuda.is_available():
         device = torch.device('cuda')
     elif args.device == 'mps' and torch.backends.mps.is_available():
         device = torch.device('mps')
     else:
         device = torch.device('cpu')
-    print(f'Device: {device}')
-    print(f'Dataset: {args.data}')
-    print(f'Edge features: {args.use_edge_features}')
-    print(f'Node features: {args.use_node_features}')
+
+    print(f'Device:         {device}')
+    print(f'Dataset:        {args.data}')
+    print(f'Edge features:  {args.use_edge_features}')
+    print(f'Node features:  {args.use_node_features}')
+    if args.use_node_features:
+        print(f'Feat warmup:    {args.feat_warmup_epochs} epochs')
+        print(f'Feat lr scale:  {args.feat_lr_scale}×')
 
     handler = DataHandler(args)
     handler.load_data()
 
-    sub_adj = [handler.sub_adj[k].to(device) for k in range(args.graphNum)]
+    sub_adj   = [handler.sub_adj[k].to(device)   for k in range(args.graphNum)]
     sub_adj_t = [handler.sub_adj_t[k].to(device) for k in range(args.graphNum)]
 
-    user_features = None
+    user_features     = None
     merchant_features = None
     if args.use_node_features and handler.user_features is not None:
-        user_features = handler.user_features.to(device)
+        user_features     = handler.user_features.to(device)
         merchant_features = handler.merchant_features.to(device)
 
     model = SelfGNN(args, sub_adj, sub_adj_t,
@@ -171,22 +192,22 @@ def main():
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f'Trainable parameters: {total_params:,}')
 
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = build_optimizer(model)
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=args.decay)
 
-    _script_dir = os.path.dirname(os.path.abspath(__file__))
+    _script_dir  = os.path.dirname(os.path.abspath(__file__))
     _results_dir = os.path.join(_script_dir, '..', 'Results')
-    _models_dir = os.path.join(_script_dir, 'Models')
+    _models_dir  = os.path.join(_script_dir, 'Models')
     os.makedirs(_results_dir, exist_ok=True)
-    os.makedirs(_models_dir, exist_ok=True)
+    os.makedirs(_models_dir,  exist_ok=True)
 
     has_val = len(handler.valUsrs) > 0
 
-    best_val_ndcg = 0.0
+    best_val_ndcg   = 0.0
     best_val_results = {}
-    best_epoch = 0
+    best_epoch       = 0
     patience_counter = 0
-    train_history = []
+    train_history    = []
 
     print('=' * 70)
     print(f'Training for {args.epoch} epochs (eval every {args.tstEpoch})')
@@ -195,12 +216,24 @@ def main():
     print('=' * 70)
 
     for ep in range(args.epoch):
+        # ── Feature gate warmup ──────────────────────────────────────────────
+        if args.use_node_features and model.use_node_features:
+            if args.feat_warmup_epochs > 0:
+                warmup_scale = min(1.0, ep / args.feat_warmup_epochs)
+            else:
+                warmup_scale = 1.0
+            model.feat_warmup_scale.fill_(warmup_scale)
+
         t0 = time.time()
         loss, pre_loss = train_epoch(model, handler, optimizer, device)
         scheduler.step()
         t1 = time.time()
+
+        warmup_str = ''
+        if args.use_node_features and model.use_node_features:
+            warmup_str = f' | warmup={model.feat_warmup_scale.item():.2f}'
         print(f'Epoch {ep}/{args.epoch} | Loss={loss:.4f} preLoss={pre_loss:.4f} '
-              f'| {t1-t0:.1f}s | lr={scheduler.get_last_lr()[0]:.6f}')
+              f'| {t1-t0:.1f}s | lr={scheduler.get_last_lr()[0]:.6f}{warmup_str}')
 
         if ep % args.tstEpoch == 0:
             if has_val:
@@ -208,9 +241,9 @@ def main():
                 print(f'  Val:  {fmt(val_results)}')
 
                 if val_results.get('NDCG@10', 0) > best_val_ndcg:
-                    best_val_ndcg = val_results['NDCG@10']
+                    best_val_ndcg    = val_results['NDCG@10']
                     best_val_results = val_results.copy()
-                    best_epoch = ep
+                    best_epoch       = ep
                     patience_counter = 0
                     torch.save(model.state_dict(),
                                os.path.join(_models_dir, f'{args.save_path}.pt'))
@@ -221,9 +254,9 @@ def main():
 
                 train_history.append({
                     'epoch': ep, 'loss': loss,
-                    'val_HR10': val_results.get('HR@10', 0),
+                    'val_HR10':   val_results.get('HR@10',   0),
                     'val_NDCG10': val_results.get('NDCG@10', 0),
-                    'val_HR20': val_results.get('HR@20', 0),
+                    'val_HR20':   val_results.get('HR@20',   0),
                     'val_NDCG20': val_results.get('NDCG@20', 0),
                 })
 
@@ -234,17 +267,17 @@ def main():
                 test_results = evaluate(model, handler, device, mode='test')
                 print(f'  Test: {fmt(test_results)}')
                 if test_results.get('NDCG@10', 0) > best_val_ndcg:
-                    best_val_ndcg = test_results['NDCG@10']
+                    best_val_ndcg    = test_results['NDCG@10']
                     best_val_results = test_results.copy()
-                    best_epoch = ep
+                    best_epoch       = ep
                     torch.save(model.state_dict(),
                                os.path.join(_models_dir, f'{args.save_path}.pt'))
                     print(f'  >>> New best. Model saved.')
                 train_history.append({
                     'epoch': ep, 'loss': loss,
-                    'val_HR10': test_results.get('HR@10', 0),
+                    'val_HR10':   test_results.get('HR@10',   0),
                     'val_NDCG10': test_results.get('NDCG@10', 0),
-                    'val_HR20': test_results.get('HR@20', 0),
+                    'val_HR20':   test_results.get('HR@20',   0),
                     'val_NDCG20': test_results.get('NDCG@20', 0),
                 })
         print()
@@ -253,6 +286,16 @@ def main():
     print(f'Loading best model from epoch {best_epoch}...')
     model.load_state_dict(torch.load(
         os.path.join(_models_dir, f'{args.save_path}.pt'), map_location=device))
+
+    # Ensure feature gate is at full strength for final evaluation.
+    # load_state_dict restores the buffer to the value at best_epoch; override
+    # to 1.0 so the final test result reflects fully-activated features.
+    if args.use_node_features and model.use_node_features:
+        model.feat_warmup_scale.fill_(1.0)
+        gate_u = torch.sigmoid(model.feat_gate_u).item()
+        gate_v = torch.sigmoid(model.feat_gate_v).item()
+        print(f'  feat_warmup_scale → 1.0 | '
+              f'learned gate: user={gate_u:.3f}  merchant={gate_v:.3f}')
 
     if has_val:
         print(f'Best Val (epoch {best_epoch}): {fmt(best_val_results)}')
@@ -268,10 +311,10 @@ def main():
 
     import json
     result_log = {
-        'best_epoch': best_epoch,
-        'val_results': best_val_results,
+        'best_epoch':   best_epoch,
+        'val_results':  best_val_results,
         'test_results': test_results,
-        'args': vars(args),
+        'args':         vars(args),
         'train_history': train_history,
     }
     result_path = os.path.join(_results_dir, f'{args.save_path}.json')

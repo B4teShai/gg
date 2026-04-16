@@ -87,42 +87,53 @@ class SelfGNN(nn.Module):
             nn.LayerNorm(self.latdim) for _ in range(self.att_layers)
         ])
 
-        # Node feature MLPs (optional)
+        # ── Node feature MLPs ───────────────────────────────────────────────
         if self.use_node_features and user_features is not None:
             d_u = user_features.shape[1]
             d_v = merchant_features.shape[1]
             hidden = args.node_mlp_hidden
-            # Plain MLP — no output LayerNorm. LayerNorm would force unit
-            # variance and drown out the Xavier-initialised base embeddings,
-            # which on a 268k-user tensor have std ~3e-4.
+
+            # BatchNorm1d → Linear → ReLU → Linear
+            # BatchNorm first: normalises raw feature inputs to zero-mean / unit-var
+            # per dimension, eliminating within-vector scale disparity
+            # (e.g. activity_span_days std=273 vs recency std=0.14 on Yelp)
+            # that dominates the first-layer gradient and produces degenerate embeddings.
+            # Init indices: BN=[0], Linear=[1], ReLU=[2], Linear=[3].
             self.user_mlp = nn.Sequential(
+                nn.BatchNorm1d(d_u),
                 nn.Linear(d_u, hidden),
                 nn.ReLU(),
                 nn.Linear(hidden, self.latdim),
             )
             self.merchant_mlp = nn.Sequential(
+                nn.BatchNorm1d(d_v),
                 nn.Linear(d_v, hidden),
                 nn.ReLU(),
                 nn.Linear(hidden, self.latdim),
             )
-            # Xavier init on ALL layers so f_u / f_v are non-zero at init.
-            # The scalar gates are initialised to a tiny positive value so
-            # that gradient can flow immediately: if either the gate OR the
-            # final linear starts at 0 the other gets zero gradient and
-            # features never activate (chicken-and-egg deadlock).
             for mlp in [self.user_mlp, self.merchant_mlp]:
-                for layer in mlp:
-                    if isinstance(layer, nn.Linear):
-                        nn.init.xavier_uniform_(layer.weight)
-                        nn.init.zeros_(layer.bias)
-            # Init to 1.0: features are fully active from step 0.
-            # 0.01 was too small — gate never opened before base embeddings converged.
-            self.feat_gate_u = nn.Parameter(torch.full((1,), 1.0))
-            self.feat_gate_v = nn.Parameter(torch.full((1,), 1.0))
+                nn.init.kaiming_uniform_(mlp[1].weight, nonlinearity='relu')
+                nn.init.zeros_(mlp[1].bias)
+                nn.init.xavier_uniform_(mlp[3].weight)
+                nn.init.zeros_(mlp[3].bias)
+
+            # Learnable post-scale gate — sigmoid keeps it in (0,1) throughout.
+            # Actual gate strength = feat_warmup_scale * sigmoid(feat_gate_*).
+            # feat_warmup_scale is set by the train loop (linear ramp 0→1 over
+            # feat_warmup_epochs) so features are completely off at epoch 0 and
+            # reach full strength only after base embeddings have stabilised.
+            self.feat_gate_u = nn.Parameter(torch.zeros(1))
+            self.feat_gate_v = nn.Parameter(torch.zeros(1))
+
+            # Warmup scalar updated each epoch from the train loop (not a param).
+            self.register_buffer('feat_warmup_scale', torch.tensor(0.0))
+
             self.register_buffer('user_feat', user_features)
             self.register_buffer('merchant_feat', merchant_features)
         else:
             self.use_node_features = False
+
+    # ── helpers ─────────────────────────────────────────────────────────────
 
     def _get_adj(self, k):
         return getattr(self, f'sub_adj_{k}')
@@ -133,38 +144,62 @@ class SelfGNN(nn.Module):
     def leaky_relu(self, x):
         return torch.where(x > 0, x, self.leaky * x)
 
+    # ── core encoding ────────────────────────────────────────────────────────
+
     def graph_encode(self, keep_rate):
-        # Compute feature projections once if using node features
-        f_u = None
-        f_v = None
+        f_u = f_v = None
+        feat_mask_u = feat_mask_v = None
+
         if self.use_node_features:
-            f_u = self.user_mlp(self.user_feat)          # (num_users, latdim)
-            f_v = self.merchant_mlp(self.merchant_feat)  # (num_items, latdim)
-            # Mask out users/merchants whose feature vector is all-zero (missing features)
+            # Project features to latdim space.
+            f_u_raw = self.user_mlp(self.user_feat)      # (N_u, latdim)
+            f_v_raw = self.merchant_mlp(self.merchant_feat)  # (N_v, latdim)
+
+            # ── Scale normalisation (fixes 700× magnitude gap) ──────────────
+            # user_embeds is (graphNum, N_u, latdim); Xavier on that 3-D tensor
+            # gives std ~3e-4.  f_u_raw from a kaiming MLP is O(1).  Without
+            # normalisation f_u dominates u_init completely and the GNN never
+            # learns collaborative patterns.
+            # Fix: L2-normalise the projection then rescale to the RMS of the
+            # current embedding norms — feature and embedding live in the same
+            # magnitude neighbourhood from step 0.
+            with torch.no_grad():
+                # Mean per-vector L2 norm across all graphs and all users.
+                embed_rms_u = self.user_embeds.detach().norm(dim=-1).mean().clamp(min=1e-6)
+                embed_rms_v = self.item_embeds.detach().norm(dim=-1).mean().clamp(min=1e-6)
+
+            f_u = F.normalize(f_u_raw, dim=-1) * embed_rms_u  # (N_u, latdim)
+            f_v = F.normalize(f_v_raw, dim=-1) * embed_rms_v  # (N_v, latdim)
+
+            # Zero-feature mask (users/merchants with all-zero inputs stay off).
             feat_mask_u = (self.user_feat.abs().sum(dim=1, keepdim=True) > 0).float()
             feat_mask_v = (self.merchant_feat.abs().sum(dim=1, keepdim=True) > 0).float()
 
+            # Effective gate = warmup_scale × sigmoid(gate_param) ∈ [0, 1].
+            eff_gate_u = self.feat_warmup_scale * torch.sigmoid(self.feat_gate_u)
+            eff_gate_v = self.feat_warmup_scale * torch.sigmoid(self.feat_gate_v)
+
         user_vectors, item_vectors = [], []
         for k in range(self.graph_num):
-            adj = edge_dropout(self._get_adj(k), keep_rate, self.training)
+            adj   = edge_dropout(self._get_adj(k),   keep_rate, self.training)
             adj_t = edge_dropout(self._get_adj_t(k), keep_rate, self.training)
 
-            # Layer 0: base embedding + optional feature fusion
             u_init = self.user_embeds[k]
             i_init = self.item_embeds[k]
             if self.use_node_features:
-                u_init = u_init + self.feat_gate_u * feat_mask_u * f_u
-                i_init = i_init + self.feat_gate_v * feat_mask_v * f_v
+                u_init = u_init + eff_gate_u * feat_mask_u * f_u
+                i_init = i_init + eff_gate_v * feat_mask_v * f_v
 
             u_embs = [u_init]
             i_embs = [i_init]
             for _ in range(self.gnn_layers):
-                u_new = self.leaky_relu(torch.sparse.mm(adj, i_embs[-1]))
+                u_new = self.leaky_relu(torch.sparse.mm(adj,   i_embs[-1]))
                 i_new = self.leaky_relu(torch.sparse.mm(adj_t, u_embs[-1]))
                 u_embs.append(u_new + u_embs[-1])
                 i_embs.append(i_new + i_embs[-1])
             user_vectors.append(sum(u_embs))
             item_vectors.append(sum(i_embs))
+
         user_stack = torch.stack(user_vectors, dim=1)
         item_stack = torch.stack(item_vectors, dim=1)
         return user_stack, item_stack, user_vectors, item_vectors
@@ -183,16 +218,16 @@ class SelfGNN(nn.Module):
 
     def sequence_encode(self, final_item, sequences, masks, keep_rate):
         B = sequences.shape[0]
-        seq_emb = final_item[sequences]                          # (B, L, d)
-        pos_emb = self.pos_embed.unsqueeze(0).expand(B, -1, -1) # (B, L, d)
-        mask_exp = masks.unsqueeze(-1)                           # (B, L, 1)
-        # Normalize per-position and zero out padding
+        seq_emb = final_item[sequences]
+        pos_emb = self.pos_embed.unsqueeze(0).expand(B, -1, -1)
+        mask_exp = masks.unsqueeze(-1)
         att = (self.ln_seq(seq_emb) + self.ln_seq_pos(pos_emb)) * mask_exp
-        # Multi-head self-attention over the full sequence, re-mask after each layer
         for i in range(self.att_layers):
             att_new = self.seq_mhsa[i](self.ln_seq_layers[i](att))
             att = (self.leaky_relu(att_new) + att) * mask_exp
-        # Masked sum pooling -> (B, d)
+        # Regularise the sequence representation during training.
+        if self.training and keep_rate < 1.0:
+            att = F.dropout(att, p=1.0 - keep_rate, training=True)
         return att.sum(dim=1)
 
     def forward(self, uids, iids, sequences, masks, u_locs_seq, keep_rate,
@@ -205,14 +240,12 @@ class SelfGNN(nn.Module):
         i_emb = final_item[iids]
         preds = (u_emb * i_emb).sum(dim=-1)
         att_u = att_user[u_locs_seq]
-        i_emb_att = final_item[iids]
-        preds = preds + (self.leaky_relu(att_u) * i_emb_att).sum(dim=-1)
+        preds = preds + (self.leaky_relu(att_u) * i_emb).sum(dim=-1)
 
         ssl_loss = torch.tensor(0.0, device=preds.device)
         if su_locs is not None and si_locs is not None:
             ssl_loss = self.compute_sal_loss(
-                final_user, final_item, user_vecs, item_vecs,
-                su_locs, si_locs)
+                final_user, final_item, user_vecs, item_vecs, su_locs, si_locs)
         return preds, ssl_loss
 
     def compute_sal_loss(self, final_user, final_item, user_vecs, item_vecs,

@@ -33,7 +33,8 @@ def parse_args():
     parser.add_argument('--device', default='cuda', type=str)
     parser.add_argument('--patience', default=20, type=int,
                         help='early stopping patience (counted in evaluation epochs)')
-    # Feature flags
+
+    # ── Feature flags ────────────────────────────────────────────────────────
     parser.add_argument('--use_edge_features', action='store_true', default=False,
                         help='use normalized interaction value as edge weight in adjacency')
     parser.add_argument('--use_node_features', action='store_true', default=False,
@@ -44,6 +45,18 @@ def parse_args():
                         help='keep avg_interaction_value in node features even when '
                              'edge features are enabled (ablation: T4-dup variant). '
                              'Default: False (zeros the value column to avoid redundancy).')
+
+    # ── Feature training stability ───────────────────────────────────────────
+    parser.add_argument('--feat_warmup_epochs', type=int, default=30,
+                        help='epochs over which feature gate linearly ramps from 0 to 1. '
+                             'Keeps base embeddings dominant until they stabilise, then '
+                             'gradually activates features. 0 = no warmup (gate fully open '
+                             'from step 0, reproduces old behaviour).')
+    parser.add_argument('--feat_lr_scale', type=float, default=0.1,
+                        help='lr multiplier for feature MLP + gate params relative to '
+                             'base embedding lr. Lower value slows down MLP convergence '
+                             'so collaborative patterns form before features lock in.')
+
     return parser.parse_args()
 
 args = parse_args()

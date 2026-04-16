@@ -135,6 +135,9 @@ class SelfGNN(nn.Module):
         for i in range(self.att_layers):
             att_new = self.seq_mhsa[i](self.ln_seq_layers[i](att))
             att = (self.leaky_relu(att_new) + att) * mask_exp
+        # Regularise the sequence representation during training.
+        if self.training and keep_rate < 1.0:
+            att = F.dropout(att, p=1.0 - keep_rate, training=True)
         # Masked sum pooling -> (B, d)
         return att.sum(dim=1)
 
@@ -148,8 +151,7 @@ class SelfGNN(nn.Module):
         i_emb = final_item[iids]
         preds = (u_emb * i_emb).sum(dim=-1)
         att_u = att_user[u_locs_seq]
-        i_emb_att = final_item[iids]
-        preds = preds + (self.leaky_relu(att_u) * i_emb_att).sum(dim=-1)
+        preds = preds + (self.leaky_relu(att_u) * i_emb).sum(dim=-1)
 
         ssl_loss = torch.tensor(0.0, device=preds.device)
         if su_locs is not None and si_locs is not None:
