@@ -7,7 +7,7 @@
 param(
     [string]$Device  = "cuda",
     [int]$Epoch      = 150,
-    [int[]]$Seeds    = @(42, 100, 123)
+    [int[]]$Seeds    = @(42)
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,7 +15,7 @@ $ErrorActionPreference = 'Stop'
 $Dataset    = "finance-merchant"
 $ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RootDir    = Split-Path -Parent $ScriptDir
-$ResultsDir = Join-Path $RootDir "Results"
+$ResultsDir = Join-Path $RootDir "Results1"
 New-Item -ItemType Directory -Force -Path $ResultsDir | Out-Null
 
 Write-Host "============================================================"

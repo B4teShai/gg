@@ -15,7 +15,7 @@ $ErrorActionPreference = 'Stop'
 $Dataset    = "yelp-merchant"
 $ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RootDir    = Split-Path -Parent $ScriptDir
-$ResultsDir = Join-Path $RootDir "Results"
+$ResultsDir = Join-Path $RootDir "Results1"
 New-Item -ItemType Directory -Force -Path $ResultsDir | Out-Null
 
 Write-Host "============================================================"
