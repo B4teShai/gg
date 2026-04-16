@@ -7,7 +7,7 @@
 param(
     [string]$Device  = "cuda",
     [int]$Epoch      = 150,
-    [int[]]$Seeds    = @(42, 100, 123)
+    [int[]]$Seeds    = @(42)
 )
 
 $ErrorActionPreference = 'Stop'

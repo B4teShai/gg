@@ -7,7 +7,7 @@
 param(
     [string]$Device  = "cuda",
     [int]$Epoch      = 150,
-    [int[]]$Seeds    = @(42, 100, 123)
+    [int[]]$Seeds    = @(42)
 )
 
 $ErrorActionPreference = 'Stop'
@@ -66,7 +66,7 @@ function Show-Results {
 #     python scripts/extract_features_v2.py --dataset $Dataset
 # } finally { Pop-Location }
 
-── 1. SelfGNN-Base (no features) ───────────────────────────────
+#── 1. SelfGNN-Base (no features) ───────────────────────────────
 Write-Host ""
 Write-Host ">>> [1/4] selfGNN-Base on $Dataset"
 Write-Host "------------------------------------------------------------"
