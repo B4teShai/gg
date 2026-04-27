@@ -41,10 +41,6 @@ def parse_args():
                         help='use user/merchant node features via MLP projection')
     parser.add_argument('--node_mlp_hidden', type=int, default=64,
                         help='hidden dimension of feature projection MLP')
-    parser.add_argument('--keep_duplicate_value', action='store_true', default=False,
-                        help='keep avg_interaction_value in node features even when '
-                             'edge features are enabled (ablation: T4-dup variant). '
-                             'Default: False (zeros the value column to avoid redundancy).')
 
     # ── Feature training stability ───────────────────────────────────────────
     parser.add_argument('--feat_warmup_epochs', type=int, default=30,

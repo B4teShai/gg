@@ -217,7 +217,7 @@ class DataHandler:
                 print(f'User features: {self.user_features.shape}, '
                       f'Merchant features: {self.merchant_features.shape}')
 
-                if args.use_edge_features and not args.keep_duplicate_value:
+                if args.use_edge_features:
                     meta_path = self.predir + 'feature_meta.json'
                     if os.path.isfile(meta_path):
                         with open(meta_path) as f:
@@ -228,11 +228,8 @@ class DataHandler:
                         u_col, m_col = 1, 1  # uniform schema default: avg_interaction_value
                     self.user_features[:, u_col] = 0.0
                     self.merchant_features[:, m_col] = 0.0
-                    print(f'  [T4-nodup] Zeroed value cols (u[:,{u_col}], m[:,{m_col}]) — '
+                    print(f'  [T4] Zeroed value cols (u[:,{u_col}], m[:,{m_col}]) — '
                           'duplication with edge weights removed')
-                elif args.use_edge_features and args.keep_duplicate_value:
-                    print('  [T4-dup] Value cols kept in node features — '
-                          'duplicated with edge weights')
             else:
                 print('WARNING: feature files not found, disabling node features')
                 args.use_node_features = False

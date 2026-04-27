@@ -37,8 +37,7 @@ def edge_dropout(adj, keep_rate, training):
 
 
 class SelfGNN(nn.Module):
-    def __init__(self, args, sub_adj_list, sub_adj_t_list,
-                 user_features=None, merchant_features=None):
+    def __init__(self, args, sub_adj_list, sub_adj_t_list, user_features=None, merchant_features=None):
         super().__init__()
         self.args = args
         self.num_users = args.user
@@ -94,11 +93,6 @@ class SelfGNN(nn.Module):
             hidden = args.node_mlp_hidden
 
             # BatchNorm1d → Linear → ReLU → Linear
-            # BatchNorm first: normalises raw feature inputs to zero-mean / unit-var
-            # per dimension, eliminating within-vector scale disparity
-            # (e.g. activity_span_days std=273 vs recency std=0.14 on Yelp)
-            # that dominates the first-layer gradient and produces degenerate embeddings.
-            # Init indices: BN=[0], Linear=[1], ReLU=[2], Linear=[3].
             self.user_mlp = nn.Sequential(
                 nn.BatchNorm1d(d_u),
                 nn.Linear(d_u, hidden),
@@ -117,11 +111,6 @@ class SelfGNN(nn.Module):
                 nn.init.xavier_uniform_(mlp[3].weight)
                 nn.init.zeros_(mlp[3].bias)
 
-            # Learnable post-scale gate — sigmoid keeps it in (0,1) throughout.
-            # Actual gate strength = feat_warmup_scale * sigmoid(feat_gate_*).
-            # feat_warmup_scale is set by the train loop (linear ramp 0→1 over
-            # feat_warmup_epochs) so features are completely off at epoch 0 and
-            # reach full strength only after base embeddings have stabilised.
             self.feat_gate_u = nn.Parameter(torch.zeros(1))
             self.feat_gate_v = nn.Parameter(torch.zeros(1))
 
@@ -155,14 +144,6 @@ class SelfGNN(nn.Module):
             f_u_raw = self.user_mlp(self.user_feat)      # (N_u, latdim)
             f_v_raw = self.merchant_mlp(self.merchant_feat)  # (N_v, latdim)
 
-            # ── Scale normalisation (fixes 700× magnitude gap) ──────────────
-            # user_embeds is (graphNum, N_u, latdim); Xavier on that 3-D tensor
-            # gives std ~3e-4.  f_u_raw from a kaiming MLP is O(1).  Without
-            # normalisation f_u dominates u_init completely and the GNN never
-            # learns collaborative patterns.
-            # Fix: L2-normalise the projection then rescale to the RMS of the
-            # current embedding norms — feature and embedding live in the same
-            # magnitude neighbourhood from step 0.
             with torch.no_grad():
                 # Mean per-vector L2 norm across all graphs and all users.
                 embed_rms_u = self.user_embeds.detach().norm(dim=-1).mean().clamp(min=1e-6)
