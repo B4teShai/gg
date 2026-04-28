@@ -1,0 +1,64 @@
+{
+  "model": "popularity",
+  "dataset": "synthetic-merchant",
+  "val_results": {
+    "HR@10": 0.043704370437043706,
+    "NDCG@10": 0.020236914809961506,
+    "HR@20": 0.08690869086908691,
+    "NDCG@20": 0.031053646834515863
+  },
+  "test_results": {
+    "HR@10": 0.0429042904290429,
+    "NDCG@10": 0.0198003888612607,
+    "HR@20": 0.08250825082508251,
+    "NDCG@20": 0.029678456492936527
+  },
+  "test_segments": {
+    "low": {
+      "HR@10": 0.04020402040204021,
+      "NDCG@10": 0.017976809094966403,
+      "HR@20": 0.0819081908190819,
+      "NDCG@20": 0.0283677778676985,
+      "users": 3333
+    },
+    "mid": {
+      "HR@10": 0.041404140414041404,
+      "NDCG@10": 0.019788026806794493,
+      "HR@20": 0.0741074107410741,
+      "NDCG@20": 0.027940440393423176,
+      "users": 3333
+    },
+    "high": {
+      "HR@10": 0.047104710471047105,
+      "NDCG@10": 0.021636330682021195,
+      "HR@20": 0.09150915091509151,
+      "NDCG@20": 0.03272715121768782,
+      "users": 3333
+    }
+  },
+  "args": {
+    "model": "popularity",
+    "data": "synthetic-merchant",
+    "dataset_dir": null,
+    "results_dir": "C:\\Users\\User\\shagai-dev\\gg\\Results_baselines",
+    "models_dir": "C:\\Users\\User\\shagai-dev\\gg\\BaselineModels",
+    "save_path": "synthetic_merchant_popularity_seed42",
+    "device": "cuda",
+    "seed": 42,
+    "deterministic": false,
+    "epochs": 100,
+    "batch": 1024,
+    "lr": 0.001,
+    "reg": 1e-05,
+    "trn_num": 10000,
+    "eval_every": 5,
+    "patience": 10,
+    "test_size": 1000,
+    "embedding_dim": 64,
+    "lightgcn_layers": 3,
+    "max_seq_len": 200,
+    "num_heads": 4,
+    "num_blocks": 2,
+    "dropout": 0.2
+  }
+}

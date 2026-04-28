@@ -1,0 +1,64 @@
+{
+  "model": "popularity",
+  "dataset": "finance-merchant",
+  "val_results": {
+    "HR@10": 0.687603305785124,
+    "NDCG@10": 0.5430761667532222,
+    "HR@20": 0.7173553719008264,
+    "NDCG@20": 0.5505235409172975
+  },
+  "test_results": {
+    "HR@10": 0.6900826446280992,
+    "NDCG@10": 0.559604351024715,
+    "HR@20": 0.7214876033057851,
+    "NDCG@20": 0.5674463412124738
+  },
+  "test_segments": {
+    "low": {
+      "HR@10": 0.6658415841584159,
+      "NDCG@10": 0.5102304246106,
+      "HR@20": 0.6831683168316832,
+      "NDCG@20": 0.5146354753052897,
+      "users": 404
+    },
+    "mid": {
+      "HR@10": 0.6352357320099256,
+      "NDCG@10": 0.5213646056088053,
+      "HR@20": 0.6699751861042184,
+      "NDCG@20": 0.5299815165608398,
+      "users": 403
+    },
+    "high": {
+      "HR@10": 0.7692307692307693,
+      "NDCG@10": 0.6473405388011773,
+      "HR@20": 0.8114143920595533,
+      "NDCG@20": 0.6578530761035682,
+      "users": 403
+    }
+  },
+  "args": {
+    "model": "popularity",
+    "data": "finance-merchant",
+    "dataset_dir": null,
+    "results_dir": "C:\\Users\\User\\shagai-dev\\gg\\Results_baselines",
+    "models_dir": "C:\\Users\\User\\shagai-dev\\gg\\BaselineModels",
+    "save_path": "finance_merchant_popularity_seed42",
+    "device": "cuda",
+    "seed": 42,
+    "deterministic": false,
+    "epochs": 100,
+    "batch": 1024,
+    "lr": 0.001,
+    "reg": 1e-05,
+    "trn_num": 10000,
+    "eval_every": 5,
+    "patience": 10,
+    "test_size": 1000,
+    "embedding_dim": 64,
+    "lightgcn_layers": 3,
+    "max_seq_len": 200,
+    "num_heads": 4,
+    "num_blocks": 2,
+    "dropout": 0.2
+  }
+}

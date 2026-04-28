@@ -1,0 +1,64 @@
+{
+  "model": "popularity",
+  "dataset": "yelp-merchant",
+  "val_results": {
+    "HR@10": 0.0774077407740774,
+    "NDCG@10": 0.03903376058677138,
+    "HR@20": 0.1254125412541254,
+    "NDCG@20": 0.051090151449654286
+  },
+  "test_results": {
+    "HR@10": 0.06900690069006901,
+    "NDCG@10": 0.03604199999837055,
+    "HR@20": 0.11531153115311531,
+    "NDCG@20": 0.04768963928143305
+  },
+  "test_segments": {
+    "low": {
+      "HR@10": 0.0708070807080708,
+      "NDCG@10": 0.03827294148178307,
+      "HR@20": 0.11731173117311731,
+      "NDCG@20": 0.050082991048375,
+      "users": 3333
+    },
+    "mid": {
+      "HR@10": 0.07140714071407141,
+      "NDCG@10": 0.03698949933043196,
+      "HR@20": 0.12001200120012001,
+      "NDCG@20": 0.049140355582792,
+      "users": 3333
+    },
+    "high": {
+      "HR@10": 0.06480648064806481,
+      "NDCG@10": 0.03286355918289661,
+      "HR@20": 0.10861086108610861,
+      "NDCG@20": 0.043845571213131755,
+      "users": 3333
+    }
+  },
+  "args": {
+    "model": "popularity",
+    "data": "yelp-merchant",
+    "dataset_dir": null,
+    "results_dir": "C:\\Users\\User\\shagai-dev\\gg\\Results_baselines",
+    "models_dir": "C:\\Users\\User\\shagai-dev\\gg\\BaselineModels",
+    "save_path": "yelp_merchant_popularity_seed42",
+    "device": "cuda",
+    "seed": 42,
+    "deterministic": false,
+    "epochs": 100,
+    "batch": 1024,
+    "lr": 0.001,
+    "reg": 1e-05,
+    "trn_num": 10000,
+    "eval_every": 5,
+    "patience": 10,
+    "test_size": 1000,
+    "embedding_dim": 64,
+    "lightgcn_layers": 3,
+    "max_seq_len": 200,
+    "num_heads": 4,
+    "num_blocks": 2,
+    "dropout": 0.2
+  }
+}

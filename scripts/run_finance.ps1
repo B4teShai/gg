@@ -1,5 +1,5 @@
 #Requires -Version 5.1
-# run_synthetic.ps1 — Full final-submission sweep on synthetic-merchant.
+# run_finance.ps1 — Full final-submission sweep on finance-merchant.
 
 param(
     [string]$Device          = "cuda",
@@ -12,7 +12,7 @@ param(
 
 $ErrorActionPreference = 'Continue'
 
-$Dataset     = "synthetic-merchant"
+$Dataset     = "finance-merchant"
 $ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RootDir     = Split-Path -Parent $ScriptDir
 $ResultsDir  = Join-Path $RootDir "Results1"
@@ -68,7 +68,7 @@ foreach ($Seed in $Seeds) {
     Push-Location (Join-Path $RootDir "selfGNN-Base")
     try {
         python train.py --data $Dataset --device $Device --epoch $Epoch --seed $Seed `
-            --save_path "synthetic_merchant_base_seed${Seed}"
+            --save_path "finance_merchant_base_seed${Seed}"
     } catch {
         Write-Warning "  [!] Run failed (seed $Seed): $_"
     } finally {
@@ -82,8 +82,8 @@ foreach ($Seed in $Seeds) {
     Push-Location (Join-Path $RootDir "selfGNN-Feature")
     try {
         python train.py --data $Dataset --device $Device --epoch $Epoch --seed $Seed `
-            --use_node_features --node_mlp_hidden 128 `
-            --save_path "synthetic_merchant_node_seed${Seed}"
+            --use_node_features `
+            --save_path "finance_merchant_node_seed${Seed}"
     } catch {
         Write-Warning "  [!] Run failed (seed $Seed): $_"
     } finally {
@@ -97,7 +97,7 @@ foreach ($Seed in $Seeds) {
     Push-Location (Join-Path $RootDir "selfGNN-Feature")
     try {
         python train.py --data $Dataset --device $Device --epoch $Epoch --seed $Seed `
-            --use_edge_features --save_path "synthetic_merchant_edge_seed${Seed}"
+            --use_edge_features --save_path "finance_merchant_edge_seed${Seed}"
     } catch {
         Write-Warning "  [!] Run failed (seed $Seed): $_"
     } finally {
@@ -111,8 +111,8 @@ foreach ($Seed in $Seeds) {
     Push-Location (Join-Path $RootDir "selfGNN-Feature")
     try {
         python train.py --data $Dataset --device $Device --epoch $Epoch --seed $Seed `
-            --use_node_features --use_edge_features --node_mlp_hidden 128 `
-            --save_path "synthetic_merchant_node_edge_seed${Seed}"
+            --use_node_features --use_edge_features `
+            --save_path "finance_merchant_node_edge_seed${Seed}"
     } catch {
         Write-Warning "  [!] Run failed (seed $Seed): $_"
     } finally {
@@ -131,7 +131,7 @@ if (-not $SkipBaselines) {
                 python train_baseline.py --model $Model --data $Dataset `
                     --device $Device --seed $Seed `
                     --epochs $BaselineEpochs --patience $Patience `
-                    --save-path "synthetic_merchant_${Model}_seed${Seed}"
+                    --save-path "finance_merchant_${Model}_seed${Seed}"
             } catch {
                 Write-Warning "  [!] Baseline $Model failed (seed $Seed): $_"
             } finally {
@@ -147,13 +147,13 @@ Write-Host "============================================================"
 Write-Host "  RESULTS SUMMARY  --  $Dataset"
 Write-Host "============================================================"
 Write-Host "`n--- SelfGNN variants (Results1/) ---"
-foreach ($tag in @("synthetic_merchant_base","synthetic_merchant_node","synthetic_merchant_edge","synthetic_merchant_node_edge")) {
+foreach ($tag in @("finance_merchant_base","finance_merchant_node","finance_merchant_edge","finance_merchant_node_edge")) {
     Show-Results -Dir $ResultsDir -Tag $tag
 }
 if (-not $SkipBaselines) {
     Write-Host "`n--- Baselines (Results_baselines/) ---"
     foreach ($Model in @("popularity","bprmf","lightgcn","sasrec","bert4rec")) {
-        Show-Results -Dir $BaselineDir -Tag "synthetic_merchant_${Model}"
+        Show-Results -Dir $BaselineDir -Tag "finance_merchant_${Model}"
     }
 }
 Write-Host ""

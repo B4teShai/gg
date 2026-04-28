@@ -105,6 +105,21 @@ class DataHandler:
             self.val_dict = {}
             print('No val_dict found.')
 
+        # ---- Optional: low/mid/high user segments for segmented eval ----
+        self.user_segments = None
+        self.segment_meta  = None
+        seg_path = self.predir + 'user_segments.pkl'
+        if os.path.isfile(seg_path):
+            with open(seg_path, 'rb') as f:
+                payload = pickle.load(f)
+            raw_seg = payload.get('segments', {}) or {}
+            self.user_segments = {
+                k: [int(u) for u in v] for k, v in raw_seg.items()
+            }
+            self.segment_meta = payload.get('meta', {})
+            seg_counts = {k: len(v) for k, v in self.user_segments.items()}
+            print(f'User segments loaded: {seg_counts}')
+
         # ---- Build PyTorch sparse adjacency ----
         self.sub_adj = []
         self.sub_adj_t = []

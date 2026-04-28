@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
-# run_synthetic.sh — Full final-submission sweep on synthetic-merchant.
+# run_finance.sh — Full final-submission sweep on finance-merchant.
 #
 # Phase A : 4 SelfGNN variants (base | node | edge | node+edge) → Results1/
 # Phase B : 5 baselines (popularity, bprmf, lightgcn, sasrec, bert4rec)
 #           → Results_baselines/
 #
 # Single seed (42) by default, matching the "full sweep, run once" budget.
-# GRAPH_NUM is now 8 across all datasets (matches the new 2-year preprocessing).
 
 set -euo pipefail
 
-DATASET="synthetic-merchant"
+DATASET="finance-merchant"
 DEVICE="cuda"
 EPOCH=150
 SEEDS=(42)
@@ -90,7 +89,7 @@ for SEED in "${SEEDS[@]}"; do
     cd "$ROOT_DIR/selfGNN-Base"
     python train.py \
       --data "$DATASET" --device "$DEVICE" --epoch "$EPOCH" --seed "$SEED" \
-      --save_path "synthetic_merchant_base_seed${SEED}"
+      --save_path "finance_merchant_base_seed${SEED}"
   )
 done
 
@@ -102,8 +101,8 @@ for SEED in "${SEEDS[@]}"; do
     cd "$ROOT_DIR/selfGNN-Feature"
     python train.py \
       --data "$DATASET" --device "$DEVICE" --epoch "$EPOCH" --seed "$SEED" \
-      --use_node_features --node_mlp_hidden 128 \
-      --save_path "synthetic_merchant_node_seed${SEED}"
+      --use_node_features \
+      --save_path "finance_merchant_node_seed${SEED}"
   )
 done
 
@@ -116,7 +115,7 @@ for SEED in "${SEEDS[@]}"; do
     python train.py \
       --data "$DATASET" --device "$DEVICE" --epoch "$EPOCH" --seed "$SEED" \
       --use_edge_features \
-      --save_path "synthetic_merchant_edge_seed${SEED}"
+      --save_path "finance_merchant_edge_seed${SEED}"
   )
 done
 
@@ -128,8 +127,8 @@ for SEED in "${SEEDS[@]}"; do
     cd "$ROOT_DIR/selfGNN-Feature"
     python train.py \
       --data "$DATASET" --device "$DEVICE" --epoch "$EPOCH" --seed "$SEED" \
-      --use_node_features --use_edge_features --node_mlp_hidden 128 \
-      --save_path "synthetic_merchant_node_edge_seed${SEED}"
+      --use_node_features --use_edge_features \
+      --save_path "finance_merchant_node_edge_seed${SEED}"
   )
 done
 
@@ -148,7 +147,7 @@ if [[ "$SKIP_BASELINES" -eq 0 ]]; then
         python train_baseline.py \
           --model "$MODEL" --data "$DATASET" --device "$DEVICE" \
           --seed "$SEED" --epochs "$BASELINE_EPOCHS" --patience "$PATIENCE" \
-          --save-path "synthetic_merchant_${MODEL}_seed${SEED}"
+          --save-path "finance_merchant_${MODEL}_seed${SEED}"
       )
     done
   done
@@ -165,7 +164,7 @@ echo "============================================================"
 
 echo ""
 echo "--- SelfGNN variants (Results1/) ---"
-for TAG in synthetic_merchant_base synthetic_merchant_node synthetic_merchant_edge synthetic_merchant_node_edge; do
+for TAG in finance_merchant_base finance_merchant_node finance_merchant_edge finance_merchant_node_edge; do
   show_results "$RESULTS_DIR" "$TAG"
 done
 
@@ -173,7 +172,7 @@ if [[ "$SKIP_BASELINES" -eq 0 ]]; then
   echo ""
   echo "--- Baselines (Results_baselines/) ---"
   for MODEL in popularity bprmf lightgcn sasrec bert4rec; do
-    show_results "$BASELINE_DIR" "synthetic_merchant_${MODEL}"
+    show_results "$BASELINE_DIR" "finance_merchant_${MODEL}"
   done
 fi
 

@@ -1,42 +1,58 @@
 #!/usr/bin/env bash
-# run_yelp.sh — Train all model variants on yelp-merchant and print results.
+# run_yelp.sh — Full final-submission sweep on yelp-merchant.
+#
+# Phase A : 4 SelfGNN variants (base | node | edge | node+edge) → Results1/
+# Phase B : 5 baselines (popularity, bprmf, lightgcn, sasrec, bert4rec)
+#           → Results_baselines/
+#
+# Single seed (42) by default, matching the "full sweep, run once" budget.
 #
 # Usage:
-#   bash run_yelp.sh [--device cuda|mps|cpu] [--epoch N] [--seeds "42 100 123"]
+#   bash run_yelp.sh [--device cuda|mps|cpu] [--epoch N] [--seeds "42"]
+#                    [--baseline-epochs N] [--patience N] [--skip-baselines]
 
 set -euo pipefail
 
 DATASET="yelp-merchant"
 DEVICE="cuda"
 EPOCH=150
-SEEDS=(42 100 123)
+SEEDS=(42)
+BASELINE_EPOCHS=100
+PATIENCE=10
+SKIP_BASELINES=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --device) DEVICE="$2"; shift 2 ;;
-    --epoch)  EPOCH="$2";  shift 2 ;;
-    --seeds)  read -ra SEEDS <<< "$2"; shift 2 ;;
+    --device)           DEVICE="$2";            shift 2 ;;
+    --epoch)            EPOCH="$2";             shift 2 ;;
+    --seeds)            read -ra SEEDS <<< "$2"; shift 2 ;;
+    --baseline-epochs)  BASELINE_EPOCHS="$2";   shift 2 ;;
+    --patience)         PATIENCE="$2";          shift 2 ;;
+    --skip-baselines)   SKIP_BASELINES=1;       shift   ;;
     *) echo "Unknown arg: $1"; exit 1 ;;
   esac
 done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-RESULTS_DIR="$ROOT_DIR/Results"
-mkdir -p "$RESULTS_DIR"
+RESULTS_DIR="$ROOT_DIR/Results1"
+BASELINE_DIR="$ROOT_DIR/Results_baselines"
+mkdir -p "$RESULTS_DIR" "$BASELINE_DIR"
 
 echo "============================================================"
 echo "  Dataset : $DATASET"
 echo "  Device  : $DEVICE"
-echo "  Epochs  : $EPOCH"
+echo "  SelfGNN epochs : $EPOCH"
+echo "  Baseline epochs: $BASELINE_EPOCHS (patience $PATIENCE)"
 echo "  Seeds   : ${SEEDS[*]}"
 echo "============================================================"
 
 show_results() {
-  local TAG="$1"
+  local DIR="$1"
+  local TAG="$2"
   echo ""
   echo "* $TAG"
-  python3 - "$RESULTS_DIR" "$TAG" "${SEEDS[@]}" <<'EOF'
+  python3 - "$DIR" "$TAG" "${SEEDS[@]}" <<'EOF'
 import json, sys, math
 
 results_dir = sys.argv[1]
@@ -65,87 +81,104 @@ for m, vals in metrics.items():
 EOF
 }
 
-# ── 1. SelfGNN-Base (no features) ───────────────────────────────
+# ================================================================
+# PHASE A — SelfGNN variants
+# ================================================================
+
 echo ""
-echo ">>> [1/4] selfGNN-Base on $DATASET"
+echo ">>> [A1/4] selfGNN-Base on $DATASET"
 echo "------------------------------------------------------------"
 for SEED in "${SEEDS[@]}"; do
-  echo "  -- seed $SEED"
   (
     cd "$ROOT_DIR/selfGNN-Base"
     python train.py \
-      --data "$DATASET" \
-      --device "$DEVICE" \
-      --epoch "$EPOCH" \
-      --seed "$SEED" \
+      --data "$DATASET" --device "$DEVICE" --epoch "$EPOCH" --seed "$SEED" \
       --save_path "yelp_merchant_base_seed${SEED}"
   )
 done
 
-# ── 2. SelfGNN-Feature (node features only) ─────────────────────
 echo ""
-echo ">>> [2/4] selfGNN-Feature (node only) on $DATASET"
+echo ">>> [A2/4] selfGNN-Feature (node only) on $DATASET"
 echo "------------------------------------------------------------"
 for SEED in "${SEEDS[@]}"; do
-  echo "  -- seed $SEED"
   (
     cd "$ROOT_DIR/selfGNN-Feature"
     python train.py \
-      --data "$DATASET" \
-      --device "$DEVICE" \
-      --epoch "$EPOCH" \
-      --seed "$SEED" \
+      --data "$DATASET" --device "$DEVICE" --epoch "$EPOCH" --seed "$SEED" \
       --use_node_features \
       --save_path "yelp_merchant_node_seed${SEED}"
   )
 done
 
-# ── 3. SelfGNN-Feature (edge features only) ─────────────────────
 echo ""
-echo ">>> [3/4] selfGNN-Feature (edge only) on $DATASET"
+echo ">>> [A3/4] selfGNN-Feature (edge only) on $DATASET"
 echo "------------------------------------------------------------"
 for SEED in "${SEEDS[@]}"; do
-  echo "  -- seed $SEED"
   (
     cd "$ROOT_DIR/selfGNN-Feature"
     python train.py \
-      --data "$DATASET" \
-      --device "$DEVICE" \
-      --epoch "$EPOCH" \
-      --seed "$SEED" \
+      --data "$DATASET" --device "$DEVICE" --epoch "$EPOCH" --seed "$SEED" \
       --use_edge_features \
       --save_path "yelp_merchant_edge_seed${SEED}"
   )
 done
 
-# ── 4. SelfGNN-Feature (node + edge features) ───────────────────
 echo ""
-echo ">>> [4/4] selfGNN-Feature (node + edge) on $DATASET"
+echo ">>> [A4/4] selfGNN-Feature (node + edge) on $DATASET"
 echo "------------------------------------------------------------"
 for SEED in "${SEEDS[@]}"; do
-  echo "  -- seed $SEED"
   (
     cd "$ROOT_DIR/selfGNN-Feature"
     python train.py \
-      --data "$DATASET" \
-      --device "$DEVICE" \
-      --epoch "$EPOCH" \
-      --seed "$SEED" \
-      --use_node_features \
-      --use_edge_features \
+      --data "$DATASET" --device "$DEVICE" --epoch "$EPOCH" --seed "$SEED" \
+      --use_node_features --use_edge_features \
       --save_path "yelp_merchant_node_edge_seed${SEED}"
   )
 done
 
-# ── Summary ─────────────────────────────────────────────────────
+# ================================================================
+# PHASE B — Baselines (popularity → BPRMF → LightGCN → SASRec → BERT4Rec)
+# ================================================================
+
+if [[ "$SKIP_BASELINES" -eq 0 ]]; then
+  for MODEL in popularity bprmf lightgcn sasrec bert4rec; do
+    echo ""
+    echo ">>> [B:$MODEL] baseline on $DATASET"
+    echo "------------------------------------------------------------"
+    for SEED in "${SEEDS[@]}"; do
+      (
+        cd "$ROOT_DIR/baselines"
+        python train_baseline.py \
+          --model "$MODEL" --data "$DATASET" --device "$DEVICE" \
+          --seed "$SEED" --epochs "$BASELINE_EPOCHS" --patience "$PATIENCE" \
+          --save-path "yelp_merchant_${MODEL}_seed${SEED}"
+      )
+    done
+  done
+fi
+
+# ================================================================
+# Summary
+# ================================================================
+
 echo ""
 echo "============================================================"
 echo "  RESULTS SUMMARY  —  $DATASET  (mean +/- std)"
 echo "============================================================"
 
+echo ""
+echo "--- SelfGNN variants (Results1/) ---"
 for TAG in yelp_merchant_base yelp_merchant_node yelp_merchant_edge yelp_merchant_node_edge; do
-  show_results "$TAG"
+  show_results "$RESULTS_DIR" "$TAG"
 done
+
+if [[ "$SKIP_BASELINES" -eq 0 ]]; then
+  echo ""
+  echo "--- Baselines (Results_baselines/) ---"
+  for MODEL in popularity bprmf lightgcn sasrec bert4rec; do
+    show_results "$BASELINE_DIR" "yelp_merchant_${MODEL}"
+  done
+fi
 
 echo ""
 echo "All runs complete for $DATASET."

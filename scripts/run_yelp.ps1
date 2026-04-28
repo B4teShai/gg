@@ -1,35 +1,48 @@
 #Requires -Version 5.1
-# run_yelp.ps1 — Train all model variants on yelp-merchant and print results.
+# run_yelp.ps1 — Full final-submission sweep on yelp-merchant.
 #
-# Usage:
-#   .\run_yelp.ps1 [-Device cuda|mps|cpu] [-Epoch N] [-Seeds 42,100,123]
+# Phase A : 4 SelfGNN variants (base | node | edge | node+edge) -> Results1\
+# Phase B : 5 baselines (popularity, bprmf, lightgcn, sasrec, bert4rec)
+#           -> Results_baselines\
 
 param(
-    [string]$Device  = "cuda",
-    [int]$Epoch      = 150,
-    [int[]]$Seeds    = @(42)
+    [string]$Device          = "cuda",
+    [int]$Epoch              = 150,
+    [int[]]$Seeds            = @(42),
+    [int]$BaselineEpochs     = 100,
+    [int]$Patience           = 10,
+    [switch]$SkipBaselines
 )
 
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'
 
-$Dataset    = "yelp-merchant"
-$ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
-$RootDir    = Split-Path -Parent $ScriptDir
-$ResultsDir = Join-Path $RootDir "Results1"
-New-Item -ItemType Directory -Force -Path $ResultsDir | Out-Null
+$Dataset     = "yelp-merchant"
+$ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
+$RootDir     = Split-Path -Parent $ScriptDir
+$ResultsDir  = Join-Path $RootDir "Results1"
+$BaselineDir = Join-Path $RootDir "Results_baselines"
+New-Item -ItemType Directory -Force -Path $ResultsDir  | Out-Null
+New-Item -ItemType Directory -Force -Path $BaselineDir | Out-Null
 
 Write-Host "============================================================"
 Write-Host "  Dataset : $Dataset"
 Write-Host "  Device  : $Device"
-Write-Host "  Epochs  : $Epoch"
+Write-Host "  SelfGNN epochs  : $Epoch"
+Write-Host "  Baseline epochs : $BaselineEpochs (patience $Patience)"
 Write-Host "  Seeds   : $($Seeds -join ', ')"
 Write-Host "============================================================"
 
+function Clear-GPUCache {
+    Write-Host "  [mem] Clearing GPU/CPU memory cache..."
+    python -c "import gc; gc.collect(); $(if ($Device -eq 'cuda') { 'import torch; torch.cuda.empty_cache()' } else { 'pass' })" 2>$null
+    Start-Sleep -Seconds 2
+}
+
 function Show-Results {
-    param([string]$Tag)
+    param([string]$Dir, [string]$Tag)
     $metrics = [ordered]@{ 'HR@10'=@(); 'NDCG@10'=@(); 'HR@20'=@(); 'NDCG@20'=@() }
     foreach ($s in $Seeds) {
-        $f = Join-Path $ResultsDir "${Tag}_seed${s}.json"
+        $f = Join-Path $Dir "${Tag}_seed${s}.json"
         if (Test-Path $f) {
             $d  = Get-Content $f -Raw | ConvertFrom-Json
             $tr = if ($d.test_results) { $d.test_results } else { $null }
@@ -57,91 +70,110 @@ function Show-Results {
     }
 }
 
-# ── 1. SelfGNN-Base (no features) ───────────────────────────────
-Write-Host ""
-Write-Host ">>> [1/4] selfGNN-Base on $Dataset"
-Write-Host "------------------------------------------------------------"
+# ============================================================
+# PHASE A -- SelfGNN variants
+# ============================================================
+
+Write-Host "`n>>> [A1/4] selfGNN-Base on $Dataset"
 foreach ($Seed in $Seeds) {
-    Write-Host "  -- seed $Seed"
     Push-Location (Join-Path $RootDir "selfGNN-Base")
     try {
-        python train.py `
-            --data      $Dataset `
-            --device    $Device  `
-            --epoch     $Epoch   `
-            --seed      $Seed    `
+        python train.py --data $Dataset --device $Device --epoch $Epoch --seed $Seed `
             --save_path "yelp_merchant_base_seed${Seed}"
-    } finally { Pop-Location }
+    } catch {
+        Write-Warning "  [!] Run failed (seed $Seed): $_"
+    } finally {
+        Pop-Location
+        Clear-GPUCache
+    }
 }
 
-# ── 2. SelfGNN-Feature (node features only) ─────────────────────
-Write-Host ""
-Write-Host ">>> [2/4] selfGNN-Feature (node only) on $Dataset"
-Write-Host "------------------------------------------------------------"
+Write-Host "`n>>> [A2/4] selfGNN-Feature (node only) on $Dataset"
 foreach ($Seed in $Seeds) {
-    Write-Host "  -- seed $Seed"
     Push-Location (Join-Path $RootDir "selfGNN-Feature")
     try {
-        python train.py `
-            --data      $Dataset `
-            --device    $Device  `
-            --epoch     $Epoch   `
-            --seed      $Seed    `
-            --use_node_features  `
-            --save_path "yelp_merchant_node_seed${Seed}"
-    } finally { Pop-Location }
+        python train.py --data $Dataset --device $Device --epoch $Epoch --seed $Seed `
+            --use_node_features --save_path "yelp_merchant_node_seed${Seed}"
+    } catch {
+        Write-Warning "  [!] Run failed (seed $Seed): $_"
+    } finally {
+        Pop-Location
+        Clear-GPUCache
+    }
 }
 
-# ── 3. SelfGNN-Feature (edge features only) ─────────────────────
-Write-Host ""
-Write-Host ">>> [3/4] selfGNN-Feature (edge only) on $Dataset"
-Write-Host "------------------------------------------------------------"
+Write-Host "`n>>> [A3/4] selfGNN-Feature (edge only) on $Dataset"
 foreach ($Seed in $Seeds) {
-    Write-Host "  -- seed $Seed"
     Push-Location (Join-Path $RootDir "selfGNN-Feature")
     try {
-        python train.py `
-            --data      $Dataset `
-            --device    $Device  `
-            --epoch     $Epoch   `
-            --seed      $Seed    `
-            --use_edge_features  `
-            --save_path "yelp_merchant_edge_seed${Seed}"
-    } finally { Pop-Location }
+        python train.py --data $Dataset --device $Device --epoch $Epoch --seed $Seed `
+            --use_edge_features --save_path "yelp_merchant_edge_seed${Seed}"
+    } catch {
+        Write-Warning "  [!] Run failed (seed $Seed): $_"
+    } finally {
+        Pop-Location
+        Clear-GPUCache
+    }
 }
 
-# ── 4. SelfGNN-Feature (node + edge features) ───────────────────
-Write-Host ""
-Write-Host ">>> [4/4] selfGNN-Feature (node + edge) on $Dataset"
-Write-Host "------------------------------------------------------------"
+Write-Host "`n>>> [A4/4] selfGNN-Feature (node + edge) on $Dataset"
 foreach ($Seed in $Seeds) {
-    Write-Host "  -- seed $Seed"
     Push-Location (Join-Path $RootDir "selfGNN-Feature")
     try {
-        python train.py `
-            --data      $Dataset `
-            --device    $Device  `
-            --epoch     $Epoch   `
-            --seed      $Seed    `
-            --use_node_features  `
-            --use_edge_features  `
+        python train.py --data $Dataset --device $Device --epoch $Epoch --seed $Seed `
+            --use_node_features --use_edge_features `
             --save_path "yelp_merchant_node_edge_seed${Seed}"
-    } finally { Pop-Location }
+    } catch {
+        Write-Warning "  [!] Run failed (seed $Seed): $_"
+    } finally {
+        Pop-Location
+        Clear-GPUCache
+    }
 }
 
-# ── Summary ─────────────────────────────────────────────────────
+# ============================================================
+# PHASE B -- Baselines
+# ============================================================
+
+if (-not $SkipBaselines) {
+    foreach ($Model in @("popularity","bprmf","lightgcn","sasrec","bert4rec")) {
+        Write-Host "`n>>> [B:$Model] baseline on $Dataset"
+        foreach ($Seed in $Seeds) {
+            Push-Location (Join-Path $RootDir "baselines")
+            try {
+                python train_baseline.py --model $Model --data $Dataset `
+                    --device $Device --seed $Seed `
+                    --epochs $BaselineEpochs --patience $Patience `
+                    --save-path "yelp_merchant_${Model}_seed${Seed}"
+            } catch {
+                Write-Warning "  [!] Baseline $Model failed (seed $Seed): $_"
+            } finally {
+                Pop-Location
+                Clear-GPUCache
+            }
+        }
+    }
+}
+
+# ============================================================
+# Summary
+# ============================================================
+
 Write-Host ""
 Write-Host "============================================================"
 Write-Host "  RESULTS SUMMARY  --  $Dataset  (mean +/- std)"
 Write-Host "============================================================"
 
-foreach ($tag in @(
-    "yelp_merchant_base",
-    "yelp_merchant_node",
-    "yelp_merchant_edge",
-    "yelp_merchant_node_edge"
-)) {
-    Show-Results -Tag $tag
+Write-Host "`n--- SelfGNN variants (Results1/) ---"
+foreach ($tag in @("yelp_merchant_base","yelp_merchant_node","yelp_merchant_edge","yelp_merchant_node_edge")) {
+    Show-Results -Dir $ResultsDir -Tag $tag
+}
+
+if (-not $SkipBaselines) {
+    Write-Host "`n--- Baselines (Results_baselines/) ---"
+    foreach ($Model in @("popularity","bprmf","lightgcn","sasrec","bert4rec")) {
+        Show-Results -Dir $BaselineDir -Tag "yelp_merchant_${Model}"
+    }
 }
 
 Write-Host ""

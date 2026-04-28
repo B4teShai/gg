@@ -33,13 +33,19 @@ def build_binary_adj(mat, shape):
     return build_sparse_adj(rows, cols, vals.astype(np.float32), shape)
 
 
-def build_weighted_adj(mat, edge_weights_arr, shape):
+def build_weighted_adj(mat, edge_weights_arr, shape, log_stats=False):
     """Build weighted adjacency from scipy sparse + weight array.
 
-    Weights are log-sigmoid transformed. No degree normalization is applied so
-    that the aggregation scheme matches the unnormalized binary adjacency used
-    in the baseline — only the edge values differ (continuous vs binary).
-    edge_weights_arr: either a pre-built CSR weight matrix or a dict.
+    The edge_weights file is now produced by feature_extraction_*.ipynb with
+    values already normalised to [0, 1] via either Bayesian-shrunk min-max
+    (Yelp rating) or log-quantile rank (finance/synthetic amount). So we
+    skip the historical sigmoid(log(1+x)) squeeze — that would compress the
+    dynamic range again, exactly the effect critic.md §3 flagged ("edge
+    weights all ended up in [0.67, 0.86]").
+
+    Instead we clip to [1e-3, 1] and apply symmetric GCN normalisation.
+    When log_stats=True the raw and post-norm distributions are printed so
+    the paper can report that weights now span the full [0, 1] range.
     """
     coo = sp.coo_matrix((mat != 0).astype(np.float32))
     rows = coo.row.astype(np.int64)
@@ -47,33 +53,42 @@ def build_weighted_adj(mat, edge_weights_arr, shape):
 
     # Vectorized weight lookup via CSR matrix
     if sp.issparse(edge_weights_arr):
-        # Fast path: edge_weights_arr is a CSR matrix with rating values
         raw = np.asarray(edge_weights_arr[rows, cols]).flatten()
         matched = int((raw > 0).sum())
         total = len(raw)
         coverage = 100.0 * matched / max(total, 1)
-        print(f'  edge-weight coverage: {matched:,}/{total:,} ({coverage:.2f}%)')
-        raw = np.where(raw > 0, raw, 1.0)
+        if log_stats:
+            print(f'  edge-weight coverage: {matched:,}/{total:,} ({coverage:.2f}%)')
+        # Missing weights fall back to the neutral mid-point so the edge
+        # still carries signal but is not artificially inflated.
+        raw = np.where(raw > 0, raw, 0.5)
     else:
-        # Fallback: dict lookup (slow, only for small matrices)
         edge_weights = edge_weights_arr
-        raw = np.ones(len(rows), dtype=np.float64)
+        raw = np.full(len(rows), 0.5, dtype=np.float64)
         for idx in range(len(rows)):
             key = (int(rows[idx]), int(cols[idx]))
             if key in edge_weights:
                 raw[idx] = edge_weights[key]
 
-    # Paper formula (section III-C.1): w_hat = sigmoid(log(1 + w))
-    # Maps raw rating 1 -> 0.667, 5 -> 0.857. Narrow range but matches the
-    # published formulation exactly, and symmetric normalisation largely
-    # cancels a uniform multiplicative scale anyway.
-    w_hat = 1.0 / (1.0 + np.exp(-np.log1p(raw)))
+    w_hat = np.clip(raw, 1e-3, 1.0)
+
+    if log_stats:
+        p = np.percentile(w_hat, [5, 25, 50, 75, 95])
+        print(f'  edge-weight distribution (post-clip): '
+              f'min={w_hat.min():.4f} max={w_hat.max():.4f} '
+              f'mean={w_hat.mean():.4f} std={w_hat.std():.4f}')
+        print(f'  percentiles  p05={p[0]:.4f} p25={p[1]:.4f} '
+              f'p50={p[2]:.4f} p75={p[3]:.4f} p95={p[4]:.4f}')
 
     row_deg = np.bincount(rows, weights=w_hat,
                           minlength=shape[0]).astype(np.float64) + 1e-8
     col_deg = np.bincount(cols, weights=w_hat,
                           minlength=shape[1]).astype(np.float64) + 1e-8
     w_norm = w_hat / np.sqrt(row_deg[rows]) / np.sqrt(col_deg[cols])
+
+    if log_stats:
+        print(f'  sym-norm weights: min={w_norm.min():.4e} '
+              f'max={w_norm.max():.4e} mean={w_norm.mean():.4e}')
 
     adj = build_sparse_adj(rows, cols, w_norm.astype(np.float32), shape)
     adj_t = build_sparse_adj(cols, rows, w_norm.astype(np.float32), (shape[1], shape[0]))
@@ -185,7 +200,8 @@ class DataHandler:
             mat = self.subMat[i]
             if args.use_edge_features and ew_csr is not None:
                 adj, adj_t = build_weighted_adj(
-                    mat, ew_csr, (args.user, args.item))
+                    mat, ew_csr, (args.user, args.item),
+                    log_stats=(i == 0))
             else:
                 adj = build_binary_adj(mat, (args.user, args.item))
                 adj_t = build_binary_adj(mat.T, (args.item, args.user))
@@ -233,6 +249,21 @@ class DataHandler:
             else:
                 print('WARNING: feature files not found, disabling node features')
                 args.use_node_features = False
+
+        # ---- Optional: low/mid/high user segments for segmented eval ----
+        self.user_segments = None
+        self.segment_meta  = None
+        seg_path = self.predir + 'user_segments.pkl'
+        if os.path.isfile(seg_path):
+            with open(seg_path, 'rb') as f:
+                payload = pickle.load(f)
+            raw_seg = payload.get('segments', {}) or {}
+            self.user_segments = {
+                k: [int(u) for u in v] for k, v in raw_seg.items()
+            }
+            self.segment_meta = payload.get('meta', {})
+            seg_counts = {k: len(v) for k, v in self.user_segments.items()}
+            print(f'User segments loaded: {seg_counts}')
 
     # ------------------------------------------------------------------ #
     #  Sampling helpers (identical to selfGNN-Base)                       #

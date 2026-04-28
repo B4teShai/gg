@@ -89,7 +89,7 @@ def train_epoch(model, handler, optimizer, device):
 
 
 @torch.no_grad()
-def evaluate(model, handler, device, mode='test'):
+def evaluate(model, handler, device, mode='test', include_segments=False):
     model.eval()
     if mode == 'val':
         ids      = handler.valUsrs
@@ -99,11 +99,11 @@ def evaluate(model, handler, device, mode='test'):
         eval_int = handler.tstInt
 
     if len(ids) == 0:
-        return {}
+        return ({}, {}) if include_segments else {}
 
     num   = len(ids)
     steps = int(np.ceil(num / args.batch))
-    all_preds, all_items, all_locs = [], [], []
+    all_preds, all_items, all_locs, all_uids = [], [], [], []
 
     for i in range(steps):
         st  = i * args.batch
@@ -127,13 +127,32 @@ def evaluate(model, handler, device, mode='test'):
         all_preds.append(preds_np)
         all_items.extend(eval_items)
         all_locs.extend(tst_locs)
+        all_uids.extend(int(u) for u in bat_ids)
 
         if (i + 1) % 10 == 0:
             print(f'\r  {mode.capitalize()} step {i+1}/{steps}', end='', flush=True)
 
     print()
     all_preds = np.concatenate(all_preds, axis=0)
-    return calc_metrics(all_preds, all_items, all_locs, k_list=[10, 20])
+    overall = calc_metrics(all_preds, all_items, all_locs, k_list=[10, 20])
+
+    if not include_segments or not getattr(handler, 'user_segments', None):
+        return (overall, {}) if include_segments else overall
+
+    # Per-segment metrics restricted to users in each (low / mid / high) set.
+    uid_to_idx = {u: i for i, u in enumerate(all_uids)}
+    by_segment = {}
+    for name, seg_users in handler.user_segments.items():
+        idx = [uid_to_idx[u] for u in seg_users if u in uid_to_idx]
+        if not idx:
+            continue
+        seg_preds = all_preds[idx]
+        seg_items = [all_items[i] for i in idx]
+        seg_locs  = [all_locs[i]  for i in idx]
+        metrics = calc_metrics(seg_preds, seg_items, seg_locs, k_list=[10, 20])
+        metrics['users'] = len(idx)
+        by_segment[name] = metrics
+    return overall, by_segment
 
 
 def fmt(results):
@@ -144,7 +163,7 @@ def build_optimizer(model):
     """Separate param groups: feature MLP + gate at lower lr to prevent
     feature projections from locking in before base embeddings stabilise."""
     if args.use_node_features and args.feat_lr_scale != 1.0:
-        feat_names  = {'user_mlp', 'merchant_mlp', 'feat_gate_u', 'feat_gate_v'}
+        feat_names  = {'user_mlp', 'merchant_mlp', 'fuse_u_gate', 'fuse_v_gate'}
         base_params = [p for n, p in model.named_parameters()
                        if not any(fn in n for fn in feat_names)]
         feat_params = [p for n, p in model.named_parameters()
@@ -292,17 +311,32 @@ def main():
     # to 1.0 so the final test result reflects fully-activated features.
     if args.use_node_features and model.use_node_features:
         model.feat_warmup_scale.fill_(1.0)
-        gate_u = torch.sigmoid(model.feat_gate_u).item()
-        gate_v = torch.sigmoid(model.feat_gate_v).item()
+        # Vector gates: log mean activation over all users/merchants to show
+        # the *average* reliance on features vs collaborative embeddings.
+        with torch.no_grad():
+            f_u = model.user_mlp(model.user_feat)
+            f_v = model.merchant_mlp(model.merchant_feat)
+            # Use the first sub-graph's embedding as reference for gate input.
+            e_u = model.user_embeds[0]
+            e_v = model.item_embeds[0]
+            gu  = torch.sigmoid(model.fuse_u_gate(torch.cat([e_u, f_u], dim=-1))).mean().item()
+            gv  = torch.sigmoid(model.fuse_v_gate(torch.cat([e_v, f_v], dim=-1))).mean().item()
         print(f'  feat_warmup_scale → 1.0 | '
-              f'learned gate: user={gate_u:.3f}  merchant={gate_v:.3f}')
+              f'mean gate activation: user={gu:.3f}  merchant={gv:.3f}')
 
     if has_val:
         print(f'Best Val (epoch {best_epoch}): {fmt(best_val_results)}')
 
     print('\nFinal Test Evaluation:')
-    test_results = evaluate(model, handler, device, mode='test')
+    test_results, test_segments = evaluate(
+        model, handler, device, mode='test', include_segments=True)
     print(f'  Test: {fmt(test_results)}')
+    if test_segments:
+        print('  Test by segment:')
+        for name, m in test_segments.items():
+            u = m.get('users', '-')
+            print(f'    {name:<5} (n={u}): HR@10={m.get("HR@10",0):.4f} '
+                  f'NDCG@10={m.get("NDCG@10",0):.4f}')
 
     if has_val:
         print('\nFinal Val Evaluation (sanity check):')
@@ -311,10 +345,11 @@ def main():
 
     import json
     result_log = {
-        'best_epoch':   best_epoch,
-        'val_results':  best_val_results,
-        'test_results': test_results,
-        'args':         vars(args),
+        'best_epoch':    best_epoch,
+        'val_results':   best_val_results,
+        'test_results':  test_results,
+        'test_segments': test_segments,
+        'args':          vars(args),
         'train_history': train_history,
     }
     result_path = os.path.join(_results_dir, f'{args.save_path}.json')

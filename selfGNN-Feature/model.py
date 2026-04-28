@@ -111,8 +111,24 @@ class SelfGNN(nn.Module):
                 nn.init.xavier_uniform_(mlp[3].weight)
                 nn.init.zeros_(mlp[3].bias)
 
-            self.feat_gate_u = nn.Parameter(torch.zeros(1))
-            self.feat_gate_v = nn.Parameter(torch.zeros(1))
+            # ── Vector-gated fusion ─────────────────────────────────────────
+            # Replaces the prior scalar additive gate (single sigmoid(g_u) for
+            # the whole latdim) with a per-dimension gate parameterised by a
+            # small linear head over the concatenation [e || f]. Intuition:
+            # for recommenders each latent dimension tends to specialise
+            # (popularity, price sensitivity, time-of-day, ...) — with a
+            # per-dim gate the model can lean on features for some dimensions
+            # while preserving pure collaborative signal on others. This is
+            # the Gated Multimodal Unit / Fi-GNN fusion pattern adapted to the
+            # two-stream (embedding + node feature) bipartite setting.
+            self.fuse_u_gate = nn.Linear(self.latdim * 2, self.latdim)
+            self.fuse_v_gate = nn.Linear(self.latdim * 2, self.latdim)
+            for layer in (self.fuse_u_gate, self.fuse_v_gate):
+                nn.init.xavier_uniform_(layer.weight)
+                # Bias of 0 → sigmoid=0.5 initially; combined with warmup=0
+                # this still means features contribute nothing at step 0,
+                # so the warmup-first-then-feature guarantee is preserved.
+                nn.init.zeros_(layer.bias)
 
             # Warmup scalar updated each epoch from the train loop (not a param).
             self.register_buffer('feat_warmup_scale', torch.tensor(0.0))
@@ -156,9 +172,9 @@ class SelfGNN(nn.Module):
             feat_mask_u = (self.user_feat.abs().sum(dim=1, keepdim=True) > 0).float()
             feat_mask_v = (self.merchant_feat.abs().sum(dim=1, keepdim=True) > 0).float()
 
-            # Effective gate = warmup_scale × sigmoid(gate_param) ∈ [0, 1].
-            eff_gate_u = self.feat_warmup_scale * torch.sigmoid(self.feat_gate_u)
-            eff_gate_v = self.feat_warmup_scale * torch.sigmoid(self.feat_gate_v)
+            # warm ∈ [0, 1] is the per-epoch linear warmup; features stay off
+            # at step 0 regardless of gate values and gradually fade in.
+            warm = self.feat_warmup_scale
 
         user_vectors, item_vectors = [], []
         for k in range(self.graph_num):
@@ -168,8 +184,15 @@ class SelfGNN(nn.Module):
             u_init = self.user_embeds[k]
             i_init = self.item_embeds[k]
             if self.use_node_features:
-                u_init = u_init + eff_gate_u * feat_mask_u * f_u
-                i_init = i_init + eff_gate_v * feat_mask_v * f_v
+                # Vector-gated fusion: g = σ(W·[e ‖ f] + b) ∈ (0,1)^latdim.
+                # The update `e + warm·mask·g·(f − e)` is a strict
+                # interpolation between e (gate=0) and the gated-sum
+                # g·f + (1-g)·e (gate=warm=1), preserving the warmup
+                # contract while allowing per-dim blending.
+                gu = torch.sigmoid(self.fuse_u_gate(torch.cat([u_init, f_u], dim=-1)))
+                gv = torch.sigmoid(self.fuse_v_gate(torch.cat([i_init, f_v], dim=-1)))
+                u_init = u_init + warm * feat_mask_u * gu * (f_u - u_init)
+                i_init = i_init + warm * feat_mask_v * gv * (f_v - i_init)
 
             u_embs = [u_init]
             i_embs = [i_init]
@@ -269,5 +292,11 @@ class SelfGNN(nn.Module):
             for p in self.user_mlp.parameters():
                 loss = loss + p.norm(2).pow(2)
             for p in self.merchant_mlp.parameters():
+                loss = loss + p.norm(2).pow(2)
+            # Regularise the new vector-gate linear heads so the fusion
+            # gate does not saturate early during warmup.
+            for p in self.fuse_u_gate.parameters():
+                loss = loss + p.norm(2).pow(2)
+            for p in self.fuse_v_gate.parameters():
                 loss = loss + p.norm(2).pow(2)
         return loss

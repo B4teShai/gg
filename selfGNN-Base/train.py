@@ -89,7 +89,7 @@ def train_epoch(model, handler, optimizer, device):
 
 
 @torch.no_grad()
-def evaluate(model, handler, device, mode='test'):
+def evaluate(model, handler, device, mode='test', include_segments=False):
     """Run evaluation. mode='val' for validation, 'test' for test."""
     model.eval()
     if mode == 'val':
@@ -100,11 +100,11 @@ def evaluate(model, handler, device, mode='test'):
         eval_int = handler.tstInt
 
     if len(ids) == 0:
-        return {}
+        return ({}, {}) if include_segments else {}
 
     num = len(ids)
     steps = int(np.ceil(num / args.batch))
-    all_preds, all_items, all_locs = [], [], []
+    all_preds, all_items, all_locs, all_uids = [], [], [], []
 
     for i in range(steps):
         st = i * args.batch
@@ -128,13 +128,31 @@ def evaluate(model, handler, device, mode='test'):
         all_preds.append(preds_np)
         all_items.extend(eval_items)
         all_locs.extend(tst_locs)
+        all_uids.extend(int(u) for u in bat_ids)
 
         if (i + 1) % 10 == 0:
             print(f'\r  {mode.capitalize()} step {i+1}/{steps}', end='', flush=True)
 
     print()
     all_preds = np.concatenate(all_preds, axis=0)
-    return calc_metrics(all_preds, all_items, all_locs, k_list=[10, 20])
+    overall = calc_metrics(all_preds, all_items, all_locs, k_list=[10, 20])
+
+    if not include_segments or not getattr(handler, 'user_segments', None):
+        return (overall, {}) if include_segments else overall
+
+    uid_to_idx = {u: i for i, u in enumerate(all_uids)}
+    by_segment = {}
+    for name, seg_users in handler.user_segments.items():
+        idx = [uid_to_idx[u] for u in seg_users if u in uid_to_idx]
+        if not idx:
+            continue
+        seg_preds = all_preds[idx]
+        seg_items = [all_items[i] for i in idx]
+        seg_locs  = [all_locs[i]  for i in idx]
+        metrics = calc_metrics(seg_preds, seg_items, seg_locs, k_list=[10, 20])
+        metrics['users'] = len(idx)
+        by_segment[name] = metrics
+    return overall, by_segment
 
 
 def fmt(results):
@@ -252,8 +270,15 @@ def main():
         print(f'Best Val (epoch {best_epoch}): {fmt(best_val_results)}')
 
     print('\nFinal Test Evaluation:')
-    test_results = evaluate(model, handler, device, mode='test')
+    test_results, test_segments = evaluate(
+        model, handler, device, mode='test', include_segments=True)
     print(f'  Test: {fmt(test_results)}')
+    if test_segments:
+        print('  Test by segment:')
+        for name, m in test_segments.items():
+            u = m.get('users', '-')
+            print(f'    {name:<5} (n={u}): HR@10={m.get("HR@10",0):.4f} '
+                  f'NDCG@10={m.get("NDCG@10",0):.4f}')
 
     if has_val:
         print(f'\nFinal Val Evaluation (sanity check):')
@@ -263,10 +288,11 @@ def main():
     # Save results
     import json
     result_log = {
-        'best_epoch': best_epoch,
-        'val_results': best_val_results,
-        'test_results': test_results,
-        'args': vars(args),
+        'best_epoch':    best_epoch,
+        'val_results':   best_val_results,
+        'test_results':  test_results,
+        'test_segments': test_segments,
+        'args':          vars(args),
         'train_history': train_history,
     }
     result_path = os.path.join(_results_dir, f'{args.save_path}.json')
