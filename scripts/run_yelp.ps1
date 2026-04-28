@@ -8,7 +8,7 @@
 param(
     [string]$Device          = "cuda",
     [int]$Epoch              = 150,
-    [int[]]$Seeds            = @(42),
+    [int[]]$Seeds            = @(100, 999),
     [int]$BaselineEpochs     = 100,
     [int]$Patience           = 10,
     [switch]$SkipBaselines
@@ -88,19 +88,6 @@ foreach ($Seed in $Seeds) {
     }
 }
 
-Write-Host "`n>>> [A2/4] selfGNN-Feature (node only) on $Dataset"
-foreach ($Seed in $Seeds) {
-    Push-Location (Join-Path $RootDir "selfGNN-Feature")
-    try {
-        python train.py --data $Dataset --device $Device --epoch $Epoch --seed $Seed `
-            --use_node_features --save_path "yelp_merchant_node_seed${Seed}"
-    } catch {
-        Write-Warning "  [!] Run failed (seed $Seed): $_"
-    } finally {
-        Pop-Location
-        Clear-GPUCache
-    }
-}
 
 Write-Host "`n>>> [A3/4] selfGNN-Feature (edge only) on $Dataset"
 foreach ($Seed in $Seeds) {
@@ -113,45 +100,6 @@ foreach ($Seed in $Seeds) {
     } finally {
         Pop-Location
         Clear-GPUCache
-    }
-}
-
-Write-Host "`n>>> [A4/4] selfGNN-Feature (node + edge) on $Dataset"
-foreach ($Seed in $Seeds) {
-    Push-Location (Join-Path $RootDir "selfGNN-Feature")
-    try {
-        python train.py --data $Dataset --device $Device --epoch $Epoch --seed $Seed `
-            --use_node_features --use_edge_features `
-            --save_path "yelp_merchant_node_edge_seed${Seed}"
-    } catch {
-        Write-Warning "  [!] Run failed (seed $Seed): $_"
-    } finally {
-        Pop-Location
-        Clear-GPUCache
-    }
-}
-
-# ============================================================
-# PHASE B -- Baselines
-# ============================================================
-
-if (-not $SkipBaselines) {
-    foreach ($Model in @("popularity","bprmf","lightgcn","sasrec","bert4rec")) {
-        Write-Host "`n>>> [B:$Model] baseline on $Dataset"
-        foreach ($Seed in $Seeds) {
-            Push-Location (Join-Path $RootDir "baselines")
-            try {
-                python train_baseline.py --model $Model --data $Dataset `
-                    --device $Device --seed $Seed `
-                    --epochs $BaselineEpochs --patience $Patience `
-                    --save-path "yelp_merchant_${Model}_seed${Seed}"
-            } catch {
-                Write-Warning "  [!] Baseline $Model failed (seed $Seed): $_"
-            } finally {
-                Pop-Location
-                Clear-GPUCache
-            }
-        }
     }
 }
 
