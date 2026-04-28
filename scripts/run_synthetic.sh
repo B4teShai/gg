@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # run_synthetic.sh — Full final-submission sweep on synthetic-merchant.
 #
-# Phase A : 4 SelfGNN variants (base | node | edge | node+edge) → Results1/
+# Phase A : 4 SelfGNN variants (base | node | edge | node+edge) → Results2/
 # Phase B : 5 baselines (popularity, bprmf, lightgcn, sasrec, bert4rec)
 #           → Results_baselines/
 #
@@ -32,7 +32,7 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-RESULTS_DIR="$ROOT_DIR/Results1"
+RESULTS_DIR="$ROOT_DIR/Results2"
 BASELINE_DIR="$ROOT_DIR/Results_baselines"
 mkdir -p "$RESULTS_DIR" "$BASELINE_DIR"
 
@@ -164,7 +164,7 @@ echo "  RESULTS SUMMARY  —  $DATASET  (mean +/- std)"
 echo "============================================================"
 
 echo ""
-echo "--- SelfGNN variants (Results1/) ---"
+echo "--- SelfGNN variants (Results2/) ---"
 for TAG in synthetic_merchant_base synthetic_merchant_node synthetic_merchant_edge synthetic_merchant_node_edge; do
   show_results "$RESULTS_DIR" "$TAG"
 done

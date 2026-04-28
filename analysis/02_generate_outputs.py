@@ -2,7 +2,7 @@
 Script 2: Generate LaTeX tables + Markdown report.
 Reads:
   - analysis/artifacts/raw_stats.json + graph_stats.json (dataset stats)
-  - Results1/*_seed42.json                                (SelfGNN variants)
+  - Results2/*_seed42.json                                (SelfGNN variants)
   - Results_baselines/*_seed42.json                       (baseline models)
 
 Writes:
@@ -393,7 +393,7 @@ def _load_model_results(seed: int = 42) -> dict:
     out: dict = {d_key: {} for d_key, _, _ in DATASETS}
     for d_key, d_prefix, _ in DATASETS:
         for m_key, _, kind in MODEL_TAGS:
-            sub  = 'Results1' if kind == 'selfgnn' else 'Results_baselines'
+            sub  = 'Results2' if kind == 'selfgnn' else 'Results_baselines'
             path = os.path.join(ROOT, sub, f'{d_prefix}_{m_key}_seed{seed}.json')
             js   = _read_json(path)
             if not js:

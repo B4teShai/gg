@@ -215,7 +215,7 @@ def main():
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=args.decay)
 
     _script_dir  = os.path.dirname(os.path.abspath(__file__))
-    _results_dir = os.path.join(_script_dir, '..', 'Results1')
+    _results_dir = os.path.join(_script_dir, '..', 'Results2')
     _models_dir  = os.path.join(_script_dir, 'Models')
     os.makedirs(_results_dir, exist_ok=True)
     os.makedirs(_models_dir,  exist_ok=True)
@@ -306,11 +306,11 @@ def main():
     model.load_state_dict(torch.load(
         os.path.join(_models_dir, f'{args.save_path}.pt'), map_location=device))
 
-    # Ensure feature gate is at full strength for final evaluation.
-    # load_state_dict restores the buffer to the value at best_epoch; override
-    # to 1.0 so the final test result reflects fully-activated features.
+    # Keep the exact feature warmup state from the validation-selected checkpoint.
+    # Forcing this buffer to 1.0 changes the model after early stopping and makes
+    # the final test result inconsistent with the selected validation epoch.
     if args.use_node_features and model.use_node_features:
-        model.feat_warmup_scale.fill_(1.0)
+        restored_warmup = model.feat_warmup_scale.item()
         # Vector gates: log mean activation over all users/merchants to show
         # the *average* reliance on features vs collaborative embeddings.
         with torch.no_grad():
@@ -321,7 +321,7 @@ def main():
             e_v = model.item_embeds[0]
             gu  = torch.sigmoid(model.fuse_u_gate(torch.cat([e_u, f_u], dim=-1))).mean().item()
             gv  = torch.sigmoid(model.fuse_v_gate(torch.cat([e_v, f_v], dim=-1))).mean().item()
-        print(f'  feat_warmup_scale → 1.0 | '
+        print(f'  feat_warmup_scale={restored_warmup:.2f} | '
               f'mean gate activation: user={gu:.3f}  merchant={gv:.3f}')
 
     if has_val:

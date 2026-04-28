@@ -135,6 +135,9 @@ class DataHandler:
         if args.graphNum > actual_graphs:
             print(f'Warning: graphNum={args.graphNum} > sub-graphs={actual_graphs}, clamping')
             args.graphNum = actual_graphs
+        elif args.graphNum < actual_graphs:
+            print(f'Warning: graphNum={args.graphNum} < sub-graphs={actual_graphs}; '
+                  f'using the first {args.graphNum} sub-graphs only')
         print(f'Sub-graphs: {args.graphNum}')
 
         # Clamp testSize to item catalog size (prevents broken eval on small catalogs)

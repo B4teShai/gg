@@ -15,7 +15,7 @@ $ErrorActionPreference = 'Continue'
 $Dataset     = "synthetic-merchant"
 $ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RootDir     = Split-Path -Parent $ScriptDir
-$ResultsDir  = Join-Path $RootDir "Results1"
+$ResultsDir  = Join-Path $RootDir "Results2"
 $BaselineDir = Join-Path $RootDir "Results_baselines"
 New-Item -ItemType Directory -Force -Path $ResultsDir  | Out-Null
 New-Item -ItemType Directory -Force -Path $BaselineDir | Out-Null
@@ -146,7 +146,7 @@ Write-Host ""
 Write-Host "============================================================"
 Write-Host "  RESULTS SUMMARY  --  $Dataset"
 Write-Host "============================================================"
-Write-Host "`n--- SelfGNN variants (Results1/) ---"
+Write-Host "`n--- SelfGNN variants (Results2/) ---"
 foreach ($tag in @("synthetic_merchant_base","synthetic_merchant_node","synthetic_merchant_edge","synthetic_merchant_node_edge")) {
     Show-Results -Dir $ResultsDir -Tag $tag
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # run_finance.sh — Full final-submission sweep on finance-merchant.
 #
-# Phase A : 4 SelfGNN variants (base | node | edge | node+edge) → Results1/
+# Phase A : 4 SelfGNN variants (base | node | edge | node+edge) → Results2/
 # Phase B : 5 baselines (popularity, bprmf, lightgcn, sasrec, bert4rec)
 #           → Results_baselines/
 #
@@ -31,7 +31,7 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-RESULTS_DIR="$ROOT_DIR/Results1"
+RESULTS_DIR="$ROOT_DIR/Results2"
 BASELINE_DIR="$ROOT_DIR/Results_baselines"
 mkdir -p "$RESULTS_DIR" "$BASELINE_DIR"
 
@@ -163,7 +163,7 @@ echo "  RESULTS SUMMARY  —  $DATASET  (mean +/- std)"
 echo "============================================================"
 
 echo ""
-echo "--- SelfGNN variants (Results1/) ---"
+echo "--- SelfGNN variants (Results2/) ---"
 for TAG in finance_merchant_base finance_merchant_node finance_merchant_edge finance_merchant_node_edge; do
   show_results "$RESULTS_DIR" "$TAG"
 done

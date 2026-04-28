@@ -95,6 +95,51 @@ def build_weighted_adj(mat, edge_weights_arr, shape, log_stats=False):
     return adj, adj_t
 
 
+def _split_feature_groups(raw):
+    groups = []
+    for part in str(raw).replace('+', ',').split(','):
+        part = part.strip()
+        if part:
+            groups.append(part)
+    return groups or ['all']
+
+
+def _resolve_feature_columns(meta, side, requested, total_cols):
+    """Resolve requested named groups to original feature column indices."""
+    group_key = f'{side}_feature_groups'
+    groups = meta.get(group_key)
+    names = meta.get(f'{side}_feature_names', [])
+    if not groups:
+        return list(range(total_cols)), names[:total_cols]
+
+    requested_groups = _split_feature_groups(requested)
+    expanded = []
+    for group in requested_groups:
+        if group == 'all':
+            expanded.extend(meta.get('default_node_feature_groups') or [
+                g for g in meta.get('group_order', groups.keys()) if g != 'degree'
+            ])
+        elif group == 'all_plus_degree':
+            expanded.extend(meta.get('group_order') or list(groups.keys()))
+        else:
+            expanded.append(group)
+
+    wanted = set()
+    unknown = []
+    for group in expanded:
+        cols = groups.get(group)
+        if cols is None:
+            unknown.append(group)
+            continue
+        wanted.update(int(c) for c in cols)
+    if unknown:
+        print(f'WARNING: unknown {side} feature groups ignored: {unknown}')
+
+    cols = [c for c in range(total_cols) if c in wanted]
+    selected_names = [names[c] if c < len(names) else f'col_{c}' for c in cols]
+    return cols, selected_names
+
+
 class DataHandler:
     def __init__(self, args):
         self.args = args
@@ -212,6 +257,9 @@ class DataHandler:
         if args.graphNum > actual_graphs:
             print(f'Warning: graphNum={args.graphNum} > sub-graphs={actual_graphs}, clamping')
             args.graphNum = actual_graphs
+        elif args.graphNum < actual_graphs:
+            print(f'Warning: graphNum={args.graphNum} < sub-graphs={actual_graphs}; '
+                  f'using the first {args.graphNum} sub-graphs only')
         print(f'Sub-graphs: {args.graphNum}')
 
         # Clamp testSize to item catalog size (prevents broken eval on small catalogs)
@@ -226,26 +274,66 @@ class DataHandler:
             uf_path = self.predir + 'user_features.npy'
             mf_path = self.predir + 'merchant_features.npy'
             if os.path.isfile(uf_path) and os.path.isfile(mf_path):
-                self.user_features = torch.FloatTensor(np.load(uf_path))
-                self.merchant_features = torch.FloatTensor(np.load(mf_path))
+                user_np = np.load(uf_path)
+                merch_np = np.load(mf_path)
+                meta = {}
+                meta_path = self.predir + 'feature_meta.json'
+                if os.path.isfile(meta_path):
+                    with open(meta_path, encoding='utf-8') as f:
+                        meta = json.load(f)
+
+                u_cols, u_names = _resolve_feature_columns(
+                    meta, 'user', args.node_feature_groups, user_np.shape[1])
+                m_cols, m_names = _resolve_feature_columns(
+                    meta, 'merchant', args.node_feature_groups, merch_np.shape[1])
+                if not u_cols or not m_cols:
+                    print('WARNING: selected node feature groups produced no columns; '
+                          'disabling node features')
+                    args.use_node_features = False
+                    return
+
+                user_np = user_np[:, u_cols].astype(np.float32, copy=True)
+                merch_np = merch_np[:, m_cols].astype(np.float32, copy=True)
+
+                if args.use_edge_features and not args.keep_node_value_with_edges:
+                    user_value_names = set(meta.get('user_value_feature_names', []))
+                    merch_value_names = set(meta.get('merchant_value_feature_names', []))
+                    if user_value_names or merch_value_names:
+                        u_zero = [
+                            i for i, name in enumerate(u_names)
+                            if name.startswith('value:')
+                            or name in user_value_names
+                            or name.split(':', 1)[-1] in user_value_names
+                        ]
+                        m_zero = [
+                            i for i, name in enumerate(m_names)
+                            if name.startswith('value:')
+                            or name in merch_value_names
+                            or name.split(':', 1)[-1] in merch_value_names
+                        ]
+                    else:
+                        u_zero = [int(meta.get('user_value_col', 1))]
+                        m_zero = [int(meta.get('merchant_value_col', 1))]
+                    for col in u_zero:
+                        if 0 <= col < user_np.shape[1]:
+                            user_np[:, col] = 0.0
+                    for col in m_zero:
+                        if 0 <= col < merch_np.shape[1]:
+                            merch_np[:, col] = 0.0
+                    if u_zero or m_zero:
+                        print(f'  Zeroed node value feature columns because edge weights '
+                              f'are enabled: user={u_zero}, merchant={m_zero}')
+
+                self.user_features = torch.FloatTensor(user_np)
+                self.merchant_features = torch.FloatTensor(merch_np)
                 args.d_u = self.user_features.shape[1]
                 args.d_v = self.merchant_features.shape[1]
+                args.selected_user_feature_names = u_names
+                args.selected_merchant_feature_names = m_names
                 print(f'User features: {self.user_features.shape}, '
                       f'Merchant features: {self.merchant_features.shape}')
+                print(f'  Node feature groups: {args.node_feature_groups}')
 
-                if args.use_edge_features:
-                    meta_path = self.predir + 'feature_meta.json'
-                    if os.path.isfile(meta_path):
-                        with open(meta_path) as f:
-                            meta = json.load(f)
-                        u_col = meta.get('user_value_col', 1)
-                        m_col = meta.get('merchant_value_col', 1)
-                    else:
-                        u_col, m_col = 1, 1  # uniform schema default: avg_interaction_value
-                    self.user_features[:, u_col] = 0.0
-                    self.merchant_features[:, m_col] = 0.0
-                    print(f'  [T4] Zeroed value cols (u[:,{u_col}], m[:,{m_col}]) — '
-                          'duplication with edge weights removed')
             else:
                 print('WARNING: feature files not found, disabling node features')
                 args.use_node_features = False

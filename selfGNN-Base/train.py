@@ -184,7 +184,7 @@ def main():
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=args.decay)
 
     _script_dir = os.path.dirname(os.path.abspath(__file__))
-    _results_dir = os.path.join(_script_dir, '..', 'Results1')
+    _results_dir = os.path.join(_script_dir, '..', 'Results2')
     _models_dir = os.path.join(_script_dir, 'Models')
     os.makedirs(_results_dir, exist_ok=True)
     os.makedirs(_models_dir, exist_ok=True)

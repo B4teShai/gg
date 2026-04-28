@@ -6,7 +6,7 @@ def parse_args():
     parser.add_argument('--batch', default=512, type=int)
     parser.add_argument('--reg', default=1e-2, type=float, help='L2 regularization weight')
     parser.add_argument('--epoch', default=150, type=int)
-    parser.add_argument('--graphNum', default=5, type=int, help='number of time-interval sub-graphs')
+    parser.add_argument('--graphNum', default=8, type=int, help='number of time-interval sub-graphs')
     parser.add_argument('--decay', default=0.96, type=float, help='lr decay rate')
     parser.add_argument('--save_path', default='yelp_merchant', type=str)
     parser.add_argument('--latdim', default=64, type=int, help='embedding dimension')

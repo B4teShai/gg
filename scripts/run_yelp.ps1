@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 # run_yelp.ps1 — Full final-submission sweep on yelp-merchant.
 #
-# Phase A : 4 SelfGNN variants (base | node | edge | node+edge) -> Results1\
+# Phase A : 4 SelfGNN variants (base | node | edge | node+edge) -> Results2\
 # Phase B : 5 baselines (popularity, bprmf, lightgcn, sasrec, bert4rec)
 #           -> Results_baselines\
 
@@ -19,7 +19,7 @@ $ErrorActionPreference = 'Continue'
 $Dataset     = "yelp-merchant"
 $ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RootDir     = Split-Path -Parent $ScriptDir
-$ResultsDir  = Join-Path $RootDir "Results1"
+$ResultsDir  = Join-Path $RootDir "Results2"
 $BaselineDir = Join-Path $RootDir "Results_baselines"
 New-Item -ItemType Directory -Force -Path $ResultsDir  | Out-Null
 New-Item -ItemType Directory -Force -Path $BaselineDir | Out-Null
@@ -164,7 +164,7 @@ Write-Host "============================================================"
 Write-Host "  RESULTS SUMMARY  --  $Dataset  (mean +/- std)"
 Write-Host "============================================================"
 
-Write-Host "`n--- SelfGNN variants (Results1/) ---"
+Write-Host "`n--- SelfGNN variants (Results2/) ---"
 foreach ($tag in @("yelp_merchant_base","yelp_merchant_node","yelp_merchant_edge","yelp_merchant_node_edge")) {
     Show-Results -Dir $ResultsDir -Tag $tag
 }

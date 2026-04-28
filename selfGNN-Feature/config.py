@@ -6,7 +6,7 @@ def parse_args():
     parser.add_argument('--batch', default=512, type=int)
     parser.add_argument('--reg', default=1e-2, type=float, help='L2 regularization weight')
     parser.add_argument('--epoch', default=150, type=int)
-    parser.add_argument('--graphNum', default=5, type=int, help='number of time-interval sub-graphs')
+    parser.add_argument('--graphNum', default=8, type=int, help='number of time-interval sub-graphs')
     parser.add_argument('--decay', default=0.96, type=float, help='lr decay rate')
     parser.add_argument('--save_path', default='yelp_merchant_feature', type=str)
     parser.add_argument('--latdim', default=64, type=int, help='embedding dimension')
@@ -41,6 +41,16 @@ def parse_args():
                         help='use user/merchant node features via MLP projection')
     parser.add_argument('--node_mlp_hidden', type=int, default=64,
                         help='hidden dimension of feature projection MLP')
+    parser.add_argument('--node_feature_groups', '--node-feature-groups',
+                        type=str, default='all',
+                        help='comma/plus separated node feature groups to load. '
+                             'Supported by train-only feature_meta.json: '
+                             'all, all_plus_degree, value, time, category, '
+                             'repeat, degree. all excludes degree/popularity.')
+    parser.add_argument('--keep_node_value_with_edges', '--keep-node-value-with-edges',
+                        action='store_true', default=False,
+                        help='when using edge features, keep node value columns instead '
+                             'of zeroing them to avoid duplication with edge weights')
 
     # ── Feature training stability ───────────────────────────────────────────
     parser.add_argument('--feat_warmup_epochs', type=int, default=30,
